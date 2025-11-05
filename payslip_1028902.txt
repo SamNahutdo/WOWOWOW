@@ -1,0 +1,26 @@
+================================================
+         OFFICIAL MONTHLY SALARY SLIP          
+================================================
+Employee ID:               1028902
+Employee Name:             Tann
+Position:                  Cooker
+Fixed Monthly Salary Base: Php25000.00
+Standard Working Days:     22
+Daily Rate:                Php1136.36
+Days Worked:               1
+Days Absent:               21
+------------------------------------------------
+EARNINGS:
+  - Basic Salary (Days Worked):    Php1136.36
+  - Less: Absent Deduction:        -Php23863.64
+GROSS PAY:                         Php-22727.27
+------------------------------------------------
+MANDATORY DEDUCTIONS:
+  - SSS (4.5%):                  -Php-1022.73
+  - PhilHealth (2.5%):           -Php-568.18
+  - Pag-IBIG (2%):               -Php-454.55
+  - Withholding Tax:             -Php0.00
+------------------------------------------------
+TOTAL DEDUCTIONS:                -Php-2045.45
+NET SALARY (Take Home):            Php-20681.82
+================================================

@@ -1,0 +1,56 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "C: Build and Run",
+            "type": "shell",
+            "command": "gcc '${file}' -o program.exe; if ($?) { .\\program.exe }",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "clear": true
+            },
+            "problemMatcher": ["$gcc"]
+            "args": [
+                "${file}",
+                "-o",
+                "$HOME\\${fileBasenameNoExtension}.exe"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": ["$gcc"],
+            "options": {
+                "cwd": "${fileDirname}"
+            }
+        }
+    ]"version": "2.0.0",
+    "tasks": [
+        {
+            "label": "C: Build and Run",
+            "type": "shell",
+            "command": "gcc '${file}' -o 'C:\\Users\\Sam Nahutdo\\${fileBasenameNoExtension}.exe' ; if ($?) { & 'C:\\Users\\Sam Nahutdo\\${fileBasenameNoExtension}.exe' }",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true,
+                "clear": true,
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "problemMatcher": ["$gcc"]
+        }
+    ]
+}
