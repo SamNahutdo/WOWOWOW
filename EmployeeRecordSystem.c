@@ -1,9 +1,28 @@
+// Employee Record System
+// Samuel Angelo Udtohan
+// Nataniel Abucejo
+// Gabriel Tayona
+
+
+
+
+
+
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
 #include <time.h>
+
+
+
+
+
+
+
 
 /* --- PLATFORM-DEPENDENT SLEEP FUNCTION --- */
 #ifdef _WIN32
@@ -16,6 +35,13 @@
     #define CLEAR_COMMAND "clear"
 #endif
 
+
+
+
+
+
+
+
 /* --- SYSTEM CONSTANTS & DEFINITIONS --- */
 #define MAX_EMPLOYEES 50
 #define ADMIN_PIN 1234
@@ -26,11 +52,25 @@
 #define MAX_WORKING_DAYS 30
 #define MAX_ATTENDANCE_RECORDS 1000
 
+
+
+
+
+
+
+
 /* --- DEDUCTION CONSTANTS --- */
 #define DEDUCTION_SSS_RATE 0.045f
 #define DEDUCTION_PHILHEALTH_RATE 0.025f
 #define DEDUCTION_PAGIBIG_RATE 0.02f
 #define OVERTIME_RATE_MULTIPLIER 1.25f
+
+
+
+
+
+
+
 
 /* --- INCOME TAX TIERS (Updated 2024 Philippine Tax Table) --- */
 #define TAX_TIER_1_LIMIT 20833.00f
@@ -51,15 +91,53 @@
 #define TAX_BASE_TIER_5 40833.33f
 #define TAX_BASE_TIER_6 200833.33f
 
-/* --- POSITION DEFINITIONS --- */
-typedef enum { SERVICE_CREW, COOKER, COUNTER_CREW, NUM_POSITIONS } PositionType;
 
-const char *PositionNames[NUM_POSITIONS] = { "Service Crew", "Cooker", "Counter Crew" };
+
+
+
+
+
+
+/* --- POSITION DEFINITIONS --- */
+typedef enum { 
+    SERVICE_CREW, 
+    COOKER, 
+    COUNTER_CREW, 
+    NUM_POSITIONS 
+} PositionType;
+
+
+
+
+
+
+
+
+const char *PositionNames[NUM_POSITIONS] = { 
+    "Service Crew", 
+    "Cooker", 
+    "Counter Crew" 
+};
+
+
+
+
+
+
+
+
 const float PositionMonthlySalaries[NUM_POSITIONS] = {
     18000.00f,
     25000.00f,
     35000.00f
 };
+
+
+
+
+
+
+
 
 /* --- ATTENDANCE STRUCTURES --- */
 typedef struct {
@@ -71,6 +149,13 @@ typedef struct {
     int isLate;
     float overtimeHours;
 } AttendanceRecord;
+
+
+
+
+
+
+
 
 /* --- EMPLOYEE STRUCTURE --- */
 typedef struct {
@@ -92,6 +177,13 @@ typedef struct {
     float lastIncomeTax;
 } Employee;
 
+
+
+
+
+
+
+
 /* --- GLOBAL STORAGE --- */
 Employee employees[MAX_EMPLOYEES];
 int employeeCount = 0;
@@ -99,49 +191,99 @@ int employeeCount = 0;
 AttendanceRecord attendanceRecords[MAX_ATTENDANCE_RECORDS];
 int attendanceCount = 0;
 
-/* --- FUNCTION PROTOTYPES --- */
+
+
+
+
+
+
+// Function Prototype
+
+// Utility Functions
 void clearInputBuffer(void);
 void pressEnterToContinue(void);
 int getIntInput(const char *prompt, int min, int max);
 void getStringInput(const char *prompt, char *out, int maxlen, int letters_spaces_only);
+void getCurrentDateTime(char *date, char *timeBuf);
+
+
+// Employee Management
+int generateEmployeeID(void);
 int findEmployeeIndexByID(int id);
 int findEmployeeIndexByName(const char *name);
+int isNameDuplicate(const char *name, int excludeID);
 PositionType getPositionTypeByName(const char *name);
+int strcasecmp(const char *s1, const char *s2);
+
+
+// File Operations
 void saveToFile(void);
 void loadFromFile(void);
 void saveAttendanceToFile(void);
 void loadAttendanceFromFile(void);
 void printPaySlipToFile(const Employee *e);
+
+
+// Menu Functions
 void mainMenu(void);
 void adminMenu(void);
+int verifyPin(void);
+
+
+// Employee Operations
 void viewEmployees(void);
 void addEmployee(void);
 void updateEmployee(void);
 void removeEmployee(void);
+
+
+// Salary Functions
 void calculateAndDisplaySalary(void);
 float calculateIncomeTax(float taxableIncome);
 void displayEmployeeSalarySlip(int id);
-void recordTimeIn(void);
-void calculateAttendanceSummary(void);
-void generateMonthlyAttendanceReport(void);
-int generateEmployeeID(void);
-int isNameDuplicate(const char *name, int excludeID);
 
-/* --- IMPLEMENTATION --- */
+
+// Attendance Functions
+void attendanceMenu(void);
+void recordTimeIn(void);
+void recordAbsent(void);
+void calculateAttendanceSummary(void);
+
+
+
+
+
+
+
+
+// Implementation
 
 void clearInputBuffer(void) {
     int c;
     while ((c = getchar()) != '\n' && c != EOF) {}
 }
 
+
+
+
+
+
+
+
 void pressEnterToContinue(void) {
-    printf("\nPress Enter to continue...");
+    printf("\n\t\t\t\t                                   Press Enter to continue...");
     fflush(stdout);
     clearInputBuffer();
 }
 
+
+
+
+
+
+
+
 int generateEmployeeID(void) {
-    // Generate random 7-digit ID between 1000000 and 9999999
     int id;
     int attempts = 0;
     int max_attempts = 100;
@@ -153,7 +295,6 @@ int generateEmployeeID(void) {
         attempts++;
         
         if (attempts >= max_attempts) {
-            // Fallback: find the next available ID
             int max_id = 1000000;
             for (int i = 0; i < employeeCount; i++) {
                 if (employees[i].empID > max_id) {
@@ -161,15 +302,20 @@ int generateEmployeeID(void) {
                 }
             }
             id = max_id + 1;
-            if (id > 9999999) {
-                id = 1000000;
-            }
+            if (id > 9999999) id = 1000000;
             break;
         }
     } while (findEmployeeIndexByID(id) != -1);
     
     return id;
 }
+
+
+
+
+
+
+
 
 int findEmployeeIndexByID(int id) {
     for (int i = 0; i < employeeCount; ++i) {
@@ -178,6 +324,13 @@ int findEmployeeIndexByID(int id) {
     return -1;
 }
 
+
+
+
+
+
+
+
 int findEmployeeIndexByName(const char *name) {
     for (int i = 0; i < employeeCount; ++i) {
         if (strcasecmp(employees[i].name, name) == 0) return i;
@@ -185,7 +338,13 @@ int findEmployeeIndexByName(const char *name) {
     return -1;
 }
 
-// Case-insensitive string comparison
+
+
+
+
+
+
+
 int strcasecmp(const char *s1, const char *s2) {
     while (*s1 && *s2) {
         int diff = tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
@@ -196,6 +355,13 @@ int strcasecmp(const char *s1, const char *s2) {
     return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
 }
 
+
+
+
+
+
+
+
 int isNameDuplicate(const char *name, int excludeID) {
     for (int i = 0; i < employeeCount; ++i) {
         if (employees[i].empID != excludeID && strcasecmp(employees[i].name, name) == 0) {
@@ -204,6 +370,13 @@ int isNameDuplicate(const char *name, int excludeID) {
     }
     return 0;
 }
+
+
+
+
+
+
+
 
 PositionType getPositionTypeByName(const char *name) {
     for (int i = 0; i < NUM_POSITIONS; i++) {
@@ -214,32 +387,47 @@ PositionType getPositionTypeByName(const char *name) {
     return SERVICE_CREW;
 }
 
+
+
+
+
+
+
+
 int getIntInput(const char *prompt, int min, int max) {
     int value;
     while (1) {
         if (prompt) printf("%s", prompt);
         if (scanf("%d", &value) != 1) {
-            printf("Invalid input. Please enter a valid number.\n");
+            printf("\t\t\t\t\tInvalid input. Please enter a valid number.\n");
             clearInputBuffer();
             continue;
         }
         clearInputBuffer();
         if (value < min || value > max) {
-            printf("Please enter a value between %d and %d.\n", min, max);
+            printf("\t\t\t\t\tPlease enter a value between %d and %d.\n", min, max);
             continue;
         }
         return value;
     }
 }
 
+
+
+
+
+
+
+
 void getStringInput(const char *prompt, char *out, int maxlen, int letters_spaces_only) {
     while (1) {
         if (prompt) printf("%s", prompt);
         if (!fgets(out, maxlen, stdin)) {
             clearInputBuffer();
-            printf("Input error. Please try again.\n");
+            printf("\t\t\t\t\tInput error. Please try again.\n");
             continue;
         }
+        
         size_t n = strlen(out);
         if (n > 0 && out[n-1] == '\n') out[n-1] = '\0';
         else if (n == (size_t)maxlen - 1) clearInputBuffer();
@@ -250,12 +438,10 @@ void getStringInput(const char *prompt, char *out, int maxlen, int letters_space
         while (end > start && isspace((unsigned char)*end)) end--;
         *(end + 1) = '\0';
         
-        if (start != out) {
-            memmove(out, start, strlen(start) + 1);
-        }
+        if (start != out) memmove(out, start, strlen(start) + 1);
         
         if (strlen(out) == 0) {
-            printf("Input cannot be empty or just spaces.\n");
+            printf("\t\t\t                                         Input cannot be empty or just spaces.\n");
             continue;
         }
         
@@ -271,28 +457,35 @@ void getStringInput(const char *prompt, char *out, int maxlen, int letters_space
                 }
             }
             if (!ok) {
-                printf("Invalid characters detected. Use only letters, spaces, hyphens, or periods.\n");
+                printf("\t\t\t\t\tInvalid characters detected. Use only letters, spaces, hyphens, or periods.\n");
                 continue;
             }
             if (!has_letter) {
-                printf("Name must contain at least one letter.\n");
+                printf("\t\t\t\t\tName must contain at least one letter.\n");
                 continue;
             }
         }
         
         if (strlen(out) < 2) {
-            printf("Name must be at least 2 characters long.\n");
+            printf("\t\t\t\t\tName must be at least 2 characters long.\n");
             continue;
         }
         
         if (strlen(out) > 48) {
-            printf("Name is too long. Maximum 48 characters.\n");
+            printf("\t\t\t\t\tName is too long. Maximum 48 characters.\n");
             continue;
         }
         
         return;
     }
 }
+
+
+
+
+
+
+
 
 void getCurrentDateTime(char *date, char *timeBuf) {
     time_t t = time(NULL);
@@ -301,14 +494,22 @@ void getCurrentDateTime(char *date, char *timeBuf) {
     sprintf(timeBuf, "%02d:%02d", tm.tm_hour, tm.tm_min);
 }
 
+
+
+
+
+
+
+
 /* --- FILE HANDLING --- */
 
 void saveToFile(void) {
     FILE *fp = fopen(FILENAME, "w");
     if (!fp) {
-        printf("\nError: Unable to save data to %s\n", FILENAME);
+        printf("\n\t\t\t\t\tError: Unable to save data to %s\n", FILENAME);
         return;
     }
+    
     fprintf(fp, "%d\n", employeeCount);
     for (int i = 0; i < employeeCount; i++) {
         fprintf(fp, "%d\n%s\n%s\n%.2f\n%d\n%.2f\n%.2f\n%.2f\n%.2f\n%.2f\n%.2f\n%.2f\n%.2f\n%.2f\n%.2f\n",
@@ -333,15 +534,23 @@ void saveToFile(void) {
     fclose(fp);
 }
 
+
+
+
+
+
+
+
 void loadFromFile(void) {
     FILE *fp = fopen(FILENAME, "r");
     if (!fp) {
-        printf("No existing payroll file found. Starting fresh.\n");
+        printf("\t\t\t\t\tNo existing payroll file found. Starting fresh.\n");
         employeeCount = 0;
         return;
     }
+    
     if (fscanf(fp, "%d\n", &employeeCount) != 1) {
-        printf("Error reading employee count from file. Starting fresh.\n");
+        printf("\t\t\t\t\tError reading employee count from file. Starting fresh.\n");
         employeeCount = 0;
         fclose(fp);
         return;
@@ -375,17 +584,25 @@ void loadFromFile(void) {
     }
 
     if (employeeCount > 0) {
-        printf("Loaded %d employees and their payroll data from file.\n", employeeCount);
+        printf("\t\t\t\t\tLoaded %d employees and their payroll data from file.\n", employeeCount);
     }
     fclose(fp);
 }
 
+
+
+
+
+
+
+
 void saveAttendanceToFile(void) {
     FILE *fp = fopen(ATTENDANCE_FILE, "w");
     if (!fp) {
-        printf("\nError: Unable to save attendance data to %s\n", ATTENDANCE_FILE);
+        printf("\n\t\t\t\t\tError: Unable to save attendance data to %s\n", ATTENDANCE_FILE);
         return;
     }
+    
     fprintf(fp, "%d\n", attendanceCount);
     for (int i = 0; i < attendanceCount; i++) {
         fprintf(fp, "%d\n%s\n%s\n%.2f\n%s\n%d\n%.2f\n",
@@ -401,15 +618,23 @@ void saveAttendanceToFile(void) {
     fclose(fp);
 }
 
+
+
+
+
+
+
+
 void loadAttendanceFromFile(void) {
     FILE *fp = fopen(ATTENDANCE_FILE, "r");
     if (!fp) {
-        printf("No existing attendance file found. Starting fresh.\n");
+        printf("\t\t\t\t\tNo existing attendance file found. Starting fresh.\n");
         attendanceCount = 0;
         return;
     }
+    
     if (fscanf(fp, "%d\n", &attendanceCount) != 1) {
-        printf("Error reading attendance count from file. Starting fresh.\n");
+        printf("\t\t\t\t\tError reading attendance count from file. Starting fresh.\n");
         attendanceCount = 0;
         fclose(fp);
         return;
@@ -435,10 +660,17 @@ void loadAttendanceFromFile(void) {
     }
 
     if (attendanceCount > 0) {
-        printf("Loaded %d attendance records from file.\n", attendanceCount);
+        printf("\t\t\t\t\tLoaded %d attendance records from file.\n", attendanceCount);
     }
     fclose(fp);
 }
+
+
+
+
+
+
+
 
 void printPaySlipToFile(const Employee *e) {
     char filename[MAX_STR];
@@ -446,7 +678,7 @@ void printPaySlipToFile(const Employee *e) {
 
     FILE *fp = fopen(filename, "w");
     if (!fp) {
-        printf("\nERROR: Unable to create file %s.\n", filename);
+        printf("\n\t\t\t\t                          ERROR: Unable to create file %s.\n", filename);
         return;
     }
 
@@ -472,64 +704,97 @@ void printPaySlipToFile(const Employee *e) {
                 e->totalOvertimeHours, OVERTIME_RATE_MULTIPLIER, e->lastOvertimePay);
     }
     if (e->lastAbsentDeduct > 0) {
-        fprintf(fp, "  - Less: Absent Deduction:        -Php%.2f\n", e->lastAbsentDeduct);
+        fprintf(fp, "  - Less: Absent Deduction:         Php%.2f\n", e->lastAbsentDeduct);
     }
     fprintf(fp, "GROSS PAY:                         Php%.2f\n", e->lastGrossPay);
     fprintf(fp, "------------------------------------------------\n");
     fprintf(fp, "MANDATORY DEDUCTIONS:\n");
-    fprintf(fp, "  - SSS (4.5%%):                  -Php%.2f\n", e->lastSSS);
-    fprintf(fp, "  - PhilHealth (2.5%%):           -Php%.2f\n", e->lastPhilHealth);
-    fprintf(fp, "  - Pag-IBIG (2%%):               -Php%.2f\n", e->lastPagIBIG);
-    fprintf(fp, "  - Withholding Tax:             -Php%.2f\n", e->lastIncomeTax);
+    fprintf(fp, "  - SSS (4.5%%):                   Php%.2f\n", e->lastSSS);
+    fprintf(fp, "  - PhilHealth (2.5%%):            Php%.2f\n", e->lastPhilHealth);
+    fprintf(fp, "  - Pag-IBIG (2%%):                Php%.2f\n", e->lastPagIBIG);
+    fprintf(fp, "  - Withholding Tax:               Php%.2f\n", e->lastIncomeTax);
     fprintf(fp, "------------------------------------------------\n");
-    fprintf(fp, "TOTAL DEDUCTIONS:                -Php%.2f\n", totalDeduction);
+    fprintf(fp, "TOTAL DEDUCTIONS:                  Php%.2f\n", totalDeduction);
     fprintf(fp, "NET SALARY (Take Home):            Php%.2f\n", e->lastNetPay);
     fprintf(fp, "================================================\n");
 
     fclose(fp);
-    printf("\nSalary Slip successfully saved to file: %s\n", filename);
+    printf("\n\t\t\t\t                          Salary Slip successfully saved to file: %s\n", filename);
 }
 
-/* --- ATTENDANCE SYSTEM IMPLEMENTATION --- */
+
+
+
+
+
+
+
+/* --- ATTENDANCE SYSTEM --- */
+
+void attendanceMenu(void) {
+    system(CLEAR_COMMAND);
+    int choice;
+    do {
+        printf("\n\t\t\t\t                                        ATTENDANCE MANAGEMENT\n");
+        printf("\n\t\t\t\t                                        1. Time In Today\n");
+        printf("\t\t\t\t                                        2. Absent\n");
+        printf("\t\t\t\t                                        3. Back to Admin Menu\n");
+        printf("\n\t\t\t\t                                          Choice: ");
+        
+        if (scanf("%d", &choice) != 1) {
+            printf("\n\t\t\t\t                                        Invalid input. Please enter a number.\n");
+            clearInputBuffer();
+            continue;
+        }
+        clearInputBuffer();
+        
+        switch (choice) {
+            case 1: recordTimeIn(); break;
+            case 2: recordAbsent(); break;
+            case 3: printf("\n\t\t\t\t                                        Returning to Admin Menu.\n"); break;
+            default: printf("\n\t\t\t\t                                        Invalid choice. Please select 1-3.\n");
+        }
+        if (choice != 3) pressEnterToContinue();
+    } while (choice != 3);
+}
 
 void recordTimeIn(void) {
     system(CLEAR_COMMAND);
-    printf("\n=== EMPLOYEE TIME-IN ===\n");
+    printf("\n\t\t\t\t                                        EMPLOYEE TIME IN\n");
     
     if (employeeCount == 0) {
-        printf("No employees registered in the system.\n");
+        printf("\t\t\t\t                                      No employees registered in the system.\n");
         return;
     }
     
     int empID;
-    printf("Enter Employee ID: ");
+    printf("\t\t\t\t                             Enter Employee ID: ");
     if (scanf("%d", &empID) != 1) {
-        printf("Invalid ID format. Please enter numbers only.\n");
+        printf("\t\t\t\t                                        Invalid ID format. Please enter numbers only.\n");
         clearInputBuffer();
         return;
     }
     clearInputBuffer();
     
     if (empID < 1000000 || empID > 9999999) {
-        printf("Invalid Employee ID. Must be 7 digits (1000000-9999999).\n");
+        printf("\t\t\t\t                     Employee ID. Must be 7 digits (1000000-9999999).\n");
         return;
     }
     
     int empIndex = findEmployeeIndexByID(empID);
     
     if (empIndex == -1) {
-        printf("Employee ID not found. Please check your ID and try again.\n");
+        printf("\t\t\t\t                                 Employee ID not found. Please check your ID and try again.\n");
         return;
     }
     
     char currentDate[11], currentTime[6];
     getCurrentDateTime(currentDate, currentTime);
     
-    // Check if already timed in today
     for (int i = 0; i < attendanceCount; i++) {
         if (attendanceRecords[i].empID == empID && 
             strcmp(attendanceRecords[i].date, currentDate) == 0) {
-            printf("You have already timed in today at %s.\n", attendanceRecords[i].timeIn);
+            printf("\t\t\t\t                                 You have already timed in today at %s.\n", attendanceRecords[i].timeIn);
             return;
         }
     }
@@ -542,81 +807,145 @@ void recordTimeIn(void) {
         strcpy(newRecord.timeIn, currentTime);
         newRecord.hoursWorked = 8.0f;
         strcpy(newRecord.status, "Present");
-        
-        // Check if late (after 8:00 AM)
-        int hour, minute;
-        sscanf(currentTime, "%d:%d", &hour, &minute);
-        if (hour > 8 || (hour == 8 && minute > 0)) {
-            newRecord.isLate = 1;
-            strcpy(newRecord.status, "Late");
-        }
+        newRecord.isLate = 0;
         
         attendanceRecords[attendanceCount++] = newRecord;
         saveAttendanceToFile();
         
-        printf("\nTime-In Recorded Successfully!\n");
-        printf("Employee: %s\n", employees[empIndex].name);
-        printf("Date: %s\n", currentDate);
-        printf("Time-In: %s\n", currentTime);
-        printf("Status: %s\n", newRecord.status);
-        printf("Hours Worked: 8.0 (Standard)\n");
+        printf("\n\t\t\t\t                                  Time-In Recorded Successfully!\n");
+        printf("\t\t\t\t                                  Employee:      %s\n", employees[empIndex].name);
+        printf("\t\t\t\t                                  Date:          %s\n", currentDate);
+        printf("\t\t\t\t                                  Time-In:       %s\n", currentTime);
+        printf("\t\t\t\t                                  Status:        %s\n", newRecord.status);
+        printf("\t\t\t\t                                  Hours Worked:  8.0 (Standard)\n");
     } else {
-        printf("Attendance records limit reached. Cannot record time-in.\n");
+        printf("\t\t\t\t                     Attendance records limit reached. Cannot record time-in.\n");
     }
 }
 
-void calculateAttendanceSummary(void) {
+void recordAbsent(void) {
     system(CLEAR_COMMAND);
-    printf("\n=== ATTENDANCE SUMMARY (Calculated for Payroll) ===\n");
+    printf("\n\t\t\t\t                                        RECORD ABSENT\n");
     
     if (employeeCount == 0) {
-        printf("No employees registered in the system.\n");
+        printf("\t\t\t\t                           No employees registered in the system.\n");
         return;
     }
     
-    printf("+---------+-----------------+--------------+----------+----------+-----------------+-----------------+\n");
-    printf("| %-7s | %-15s | %-12s | %-8s | %-8s | %-15s | %-15s |\n", 
-           "ID", "Name", "Days Worked", "Absent", "Late", "Overtime Hours", "Total Hours");
-    printf("+---------+-----------------+--------------+----------+----------+-----------------+-----------------+\n");
+    int empID;
+    printf("\t\t\t\t                             Enter Employee ID: ");
+    if (scanf("%d", &empID) != 1) {
+        printf("\t\t\t\t                       Invalid ID format. Please enter numbers only.\n");
+        clearInputBuffer();
+        return;
+    }
+    clearInputBuffer();
+    
+    if (empID < 1000000 || empID > 9999999) {
+        printf("\t\t\t\t                Invalid Employee ID. Must be 7 digits (1000000-9999999).\n");
+        return;
+    }
+    
+    int empIndex = findEmployeeIndexByID(empID);
+    
+    if (empIndex == -1) {
+        printf("\t\t\t\t\tEmployee ID not found. Please check your ID and try again.\n");
+        return;
+    }
+    
+    char currentDate[11], currentTime[6];
+    getCurrentDateTime(currentDate, currentTime);
+    
+    for (int i = 0; i < attendanceCount; i++) {
+        if (attendanceRecords[i].empID == empID && 
+            strcmp(attendanceRecords[i].date, currentDate) == 0) {
+            printf("\t\t\t\t\tAttendance for this employee has already been recorded for today.\n");
+            return;
+        }
+    }
+    
+    // Create new absent record
+    if (attendanceCount < MAX_ATTENDANCE_RECORDS) {
+        AttendanceRecord newRecord = {0};
+        newRecord.empID = empID;
+        strcpy(newRecord.date, currentDate);
+        strcpy(newRecord.timeIn, "00:00");
+        newRecord.hoursWorked = 0.0f;
+        strcpy(newRecord.status, "Absent");
+        newRecord.isLate = 0;
+        newRecord.overtimeHours = 0.0f;
+        
+        attendanceRecords[attendanceCount++] = newRecord;
+        saveAttendanceToFile();
+        
+        printf("\n\t\t\t\t\tAbsent Recorded Successfully!\n");
+        printf("\t\t\t\t\tEmployee:  %s\n", employees[empIndex].name);
+        printf("\t\t\t\t\tDate:      %s\n", currentDate);
+        printf("\t\t\t\t\tStatus:    Absent\n");
+    } else {
+        printf("\t\t\t\t\tAttendance records limit reached. Cannot record absent.\n");
+    }
+}
+
+
+
+
+
+
+
+
+void calculateAttendanceSummary(void) {
+    system(CLEAR_COMMAND);
+    printf("\n\t\t\t               EMPLOYEE ATTENDANCE\n");
+    
+    if (employeeCount == 0) {
+        printf("\t\t\t               No employees registered in the system.\n");
+        return;
+    }
+    
+    printf("\n\n\t\t\t               ========================================================================================\n");
+    printf("\t\t\t               | %-7s  %-35s  %-25s  %-10s  |\n", "ID", "Name", "Days Worked", "Absent");
+    printf("\t\t\t               ========================================================================================\n\n");
     
     for (int i = 0; i < employeeCount; i++) {
         int daysWorked = 0;
-        int lateCount = 0;
         float totalOvertime = 0.0;
-        float totalHours = 0.0;
         
         for (int j = 0; j < attendanceCount; j++) {
             if (attendanceRecords[j].empID == employees[i].empID) {
-                daysWorked++;
-                totalHours += attendanceRecords[j].hoursWorked;
-                totalOvertime += attendanceRecords[j].overtimeHours;
-                
-                if (attendanceRecords[j].isLate) {
-                    lateCount++;
+                if (strcmp(attendanceRecords[j].status, "Present") == 0) {
+                    daysWorked++;
                 }
+                totalOvertime += attendanceRecords[j].overtimeHours;
             }
         }
         
         employees[i].daysWorked = daysWorked;
         employees[i].totalOvertimeHours = totalOvertime;
-        employees[i].totalHoursWorked = totalHours;
         
-        printf("| %-7d | %-15.15s | %-12d | %-8d | %-8d | %-15.2f | %-15.2f |\n",
-               employees[i].empID,
-               employees[i].name,
-               daysWorked,
-               STANDARD_WORKING_DAYS - daysWorked,
-               lateCount,
-               totalOvertime,
-               totalHours);
+        int daysAbsent = STANDARD_WORKING_DAYS - daysWorked;
+        if (daysAbsent < 0) daysAbsent = 0;
+        
+        printf("\t\t\t                 %-7d  %-35s  %-25d  %-10d  \n\n",
+                employees[i].empID,
+                employees[i].name,
+                daysWorked,
+                daysAbsent,
+                totalOvertime);
     }
-    printf("+---------+-----------------+--------------+----------+----------+-----------------+-----------------+\n");
+    printf("\t\t\t               ----------------------------------------------------------------------------------------\n");
     
     saveToFile();
-    printf("\nAttendance summary calculated and saved.\n");
 }
 
-/* --- SALARY COMPUTATION LOGIC --- */
+
+
+
+
+
+
+
+/* --- SALARY COMPUTATION --- */
 
 float calculateIncomeTax(float taxableIncome) {
     if (taxableIncome <= TAX_TIER_1_LIMIT) {
@@ -634,28 +963,35 @@ float calculateIncomeTax(float taxableIncome) {
     }
 }
 
+
+
+
+
+
+
+
 void calculateAndDisplaySalary(void) {
     system(CLEAR_COMMAND);
     if (employeeCount == 0) {
-        printf("\nNo employees for salary computation.\n");
+        printf("\n\t\t\t                                             No employees for salary computation.\n");
         return;
     }
 
-    printf("\n=== Monthly Salary Computation (Attendance-Based) ===\n");
-    printf("(Based on %d Standard Working Days)\n\n", STANDARD_WORKING_DAYS);
+    printf("\n\t\t\t                            Monthly Salary Computation (Attendance Based)\n");
+    printf("\t\t\t                                 (Based on %d Standard Working Days)\n\n", STANDARD_WORKING_DAYS);
 
-    printf("+---------+-----------------+-------+------------+-------------+--------------+-------------+\n");
-    printf("| %-7s | %-15s | %-5s | %-10s | %-11s | %-12s | %-11s |\n", 
-           "ID", "Name", "Days", "Daily Rate", "Basic Salary", "Deductions", "Net Salary");
-    printf("+---------+-----------------+-------+------------+-------------+--------------+-------------+\n");
+    printf("\t\t                 ==================================================================================================\n");
+    printf("\t\t                 | %-7s %-20s    %-5s   %-10s   %-11s   %-10s   %-11s   |\n",  "ID", "Name", "Days", "Daily Rate", "Basic Salary", "Deductions", "Net Salary");
+    printf("\t\t                 ==================================================================================================\n");
 
     for (int i = 0; i < employeeCount; i++) {
         // Calculate rates
         float dailyRate = employees[i].monthlySalary / STANDARD_WORKING_DAYS;
         float hourlyRate = dailyRate / 8.0f;
 
-        // Calculate Basic Pay and Absent Deduction
+        // Calculate Basic Pay (only for days actually worked)
         float basicSalary = dailyRate * employees[i].daysWorked;
+        if (basicSalary < 0.0f) basicSalary = 0.0f;
         
         float absentDeduct = 0.0f;
         if (employees[i].daysWorked < STANDARD_WORKING_DAYS) {
@@ -664,25 +1000,34 @@ void calculateAndDisplaySalary(void) {
 
         // Calculate Overtime Pay
         float overtimePay = employees[i].totalOvertimeHours * hourlyRate * OVERTIME_RATE_MULTIPLIER;
+        if (overtimePay < 0.0f) overtimePay = 0.0f;
 
-        // Calculate Gross Pay (Basic salary minus absent deduction plus overtime)
-        float grossPay = (basicSalary - absentDeduct) + overtimePay;
+        // Calculate Gross Pay (basic + overtime, absent deduction already reflected in lower basicSalary)
+        float grossPay = basicSalary + overtimePay;
+        if (grossPay < 0.0f) grossPay = 0.0f;
 
-        // Calculate mandatory deductions (based on gross pay)
-        float sssDeduct = grossPay * DEDUCTION_SSS_RATE;
-        float philhealthDeduct = grossPay * DEDUCTION_PHILHEALTH_RATE;
-        float pagibigDeduct = grossPay * DEDUCTION_PAGIBIG_RATE;
+        // Calculate mandatory deductions (only if grossPay is positive)
+        float sssDeduct = 0.0f;
+        float philhealthDeduct = 0.0f;
+        float pagibigDeduct = 0.0f;
+        float incomeTaxDeduct = 0.0f;
         
-        // Calculate taxable income (gross pay minus non-taxable deductions)
-        // Note: SSS, PhilHealth, and Pag-IBIG are non-taxable
-        float taxableIncome = grossPay;
-        
-        // Calculate Income Tax
-        float incomeTaxDeduct = calculateIncomeTax(taxableIncome);
+        if (grossPay > 0.0f) {
+            sssDeduct = grossPay * DEDUCTION_SSS_RATE;
+            philhealthDeduct = grossPay * DEDUCTION_PHILHEALTH_RATE;
+            pagibigDeduct = grossPay * DEDUCTION_PAGIBIG_RATE;
+            
+            // Calculate taxable income
+            float taxableIncome = grossPay;
+            
+            // Calculate Income Tax
+            incomeTaxDeduct = calculateIncomeTax(taxableIncome);
+        }
 
         // Final calculation
         float totalDeduction = sssDeduct + philhealthDeduct + pagibigDeduct + incomeTaxDeduct;
         float netSalary = grossPay - totalDeduction;
+        if (netSalary < 0.0f) netSalary = 0.0f;
 
         // Store calculation results
         employees[i].lastDailyRate = dailyRate;
@@ -695,75 +1040,115 @@ void calculateAndDisplaySalary(void) {
         employees[i].lastPagIBIG = pagibigDeduct;
         employees[i].lastIncomeTax = incomeTaxDeduct;
 
-        printf("| %-7d | %-15.15s | %-5d | %-10.2f | %-11.2f | %-12.2f | %-11.2f |\n",
-               employees[i].empID, 
-               employees[i].name, 
-               employees[i].daysWorked,
-               dailyRate,
-               basicSalary - absentDeduct, 
-               totalDeduction,
-               netSalary);
+        printf("\n\t\t                 %-7d   %-20s    %-5d   %-10.2f   %-11.2f    %-10.2f   %-11.2f \n\n",
+                employees[i].empID, 
+                employees[i].name, 
+                employees[i].daysWorked,
+                dailyRate,
+                basicSalary, 
+                totalDeduction,
+                netSalary);
     }
-    printf("+---------+-----------------+-------+------------+-------------+--------------+-------------+\n");
+    printf("\t\t                 --------------------------------------------------------------------------------------------------\n");
     saveToFile();
-    printf("\nAll monthly salary computations completed and saved.\n");
+    printf("\n\t\t\t                                  All monthly salary computations completed and saved.\n");
 }
+
+
+
+
+
+
+
 
 void displayEmployeeSalarySlip(int id) {
     system(CLEAR_COMMAND);
     int idx = findEmployeeIndexByID(id);
 
     if (idx == -1) {
-        printf("\nEmployee with ID %d not found.\n", id);
+        printf("\n\t\t\t\t                                         Employee with ID %d not found.\n", id);
         return;
     }
     
     if (employees[idx].lastGrossPay == 0.0f && employees[idx].daysWorked == 0) {
-        printf("\nSalary computation has not been run for this employee yet.\n");
-        printf("Please run 'Calculate & View Monthly Salary Computation' first.\n");
+        printf("\n\t\t\t\t                              Salary computation has not been run for this employee yet.\n");
+        printf("\t\t\t\t                             Please run 'Calculate & View Monthly Salary Computation' first.\n");
         return;
     }
 
-    printf("\nGenerating Salary Slip...\n");
+    printf("\n\t\t\t\t                          ==========================================\n");
+    printf("\t\t\t\t                                   GENERATING SALARY SLIP\n");
+    printf("\t\t\t\t                          ==========================================\n\n");
+    fflush(stdout);
+    
+    // Animated processing similar to Kali Linux install process
+    const char* stages[] = {
+        "processing",
+        "record system initializing",
+        "computation starting",
+        "deduction calculating"
+    };
+    int numStages = 4;
+    int stageDuration = 750; // 750ms per stage = 3 seconds total
+    
+    for (int stage = 0; stage < numStages; stage++) {
+        printf("\t\t\t\t                          [%d/%d] %s", stage + 1, numStages, stages[stage]);
+        fflush(stdout);
+        
+        // Animate dots
+        for (int dot = 0; dot < 15; dot++) {
+            printf(".");
+            fflush(stdout);
+            SLEEP_FUNCTION(stageDuration / 15);
+        }
+        
+        printf(" [OK]\n");
+        fflush(stdout);
+    }
+    
+    printf("\n\t\t\t\t                          ==========================================\n");
+    printf("\t\t\t\t                            Salary Slip Generated Successfully!\n");
+    printf("\t\t\t\t                          ==========================================\n\n");
     SLEEP_FUNCTION(500);
-
+    
     Employee e = employees[idx];
 
-    printf("\n========= MONTHLY SALARY SLIP =========\n");
-    printf("Employee ID: %d\n", e.empID);
-    printf("Employee Name: %s\n", e.name);
-    printf("Position: %s\n", PositionNames[e.position]);
-    printf("Monthly Salary Base: Php%.2f\n", e.monthlySalary);
-    printf("Daily Rate: Php%.2f\n", e.lastDailyRate);
-    printf("Days Worked: %d / %d\n", e.daysWorked, STANDARD_WORKING_DAYS);
-    printf("Overtime Hours: %.2f\n", e.totalOvertimeHours);
-    printf("-----------------------------------------\n");
+    printf("\n\t\t\t\t                          ========= MONTHLY SALARY SLIP =========\n");
+    printf("\t\t\t\t                          Employee ID:           %d\n", e.empID);
+    printf("\t\t\t\t                          Employee Name:         %s\n", e.name);
+    printf("\t\t\t\t                          Position:              %s\n", PositionNames[e.position]);
+    printf("\t\t\t\t                          Monthly Salary Base:   Php%.2f\n", e.monthlySalary);
+    printf("\t\t\t\t                          Daily Rate:            Php%.2f\n", e.lastDailyRate);
+    printf("\t\t\t\t                          Days Worked:           %d / %d\n", e.daysWorked, STANDARD_WORKING_DAYS);
+    printf("\t\t\t\t                          Overtime Hours:        %.2f\n", e.totalOvertimeHours);
+    printf("\t\t\t\t                          -----------------------------------------\n");
 
     float totalDeduction = e.lastSSS + e.lastPhilHealth + e.lastPagIBIG + e.lastIncomeTax;
     float actualBasicPay = e.lastDailyRate * e.daysWorked;
+    if (actualBasicPay < 0.0f) actualBasicPay = 0.0f;
 
-    printf("EARNINGS:\n"); 
-    printf("- Basic Salary (Days Worked):   Php%.2f\n", actualBasicPay);
+    printf("\t\t\t\t                          EARNINGS:\n"); 
+    printf("\t\t\t\t                          - Basic Salary (Days Worked):   Php%.2f\n", actualBasicPay);
     if (e.lastOvertimePay > 0.0f) {
-        printf("- ADD: Overtime Pay (%.2fx):    +Php%.2f\n", OVERTIME_RATE_MULTIPLIER, e.lastOvertimePay);
+        printf("\t\t\t\t                          - ADD: Overtime Pay (%.2fx):    +Php%.2f\n", OVERTIME_RATE_MULTIPLIER, e.lastOvertimePay);
     }
-    if (e.lastAbsentDeduct > 0) {
-        printf("- Less: Absent Deduction:        -Php%.2f\n", e.lastAbsentDeduct); 
+    if (e.lastAbsentDeduct > 0.0f && e.daysWorked < STANDARD_WORKING_DAYS) {
+        printf("\t\t\t\t                          - Less: Absent Deduction:        Php%.2f\n", e.lastAbsentDeduct); 
     }
-    printf("-----------------------------------------\n");
-    printf("TOTAL GROSS PAY:                Php%.2f\n", e.lastGrossPay); 
-    printf("-----------------------------------------\n");
-    printf("DEDUCTIONS:\n");
-    printf("- SSS (4.5%%):           -Php%.2f\n", e.lastSSS);
-    printf("- PhilHealth (2.5%%):     -Php%.2f\n", e.lastPhilHealth);
-    printf("- Pag-IBIG (2%%):         -Php%.2f\n", e.lastPagIBIG);
-    printf("- Income Tax:           -Php%.2f\n", e.lastIncomeTax);
-    printf("-----------------------------------------\n");
-    printf("TOTAL DEDUCTIONS:       -Php%.2f\n", totalDeduction);
-    printf("NET SALARY:             Php%.2f\n", e.lastNetPay);
-    printf("=========================================\n");
+    printf("\t\t\t\t                          -----------------------------------------\n");
+    printf("\t\t\t\t                          TOTAL GROSS PAY:                 Php%.2f\n", e.lastGrossPay); 
+    printf("\t\t\t\t                          -----------------------------------------\n");
+    printf("\t\t\t\t                          DEDUCTIONS:\n");
+    printf("\t\t\t\t                          - SSS (4.5%%):              Php%.2f\n", e.lastSSS);
+    printf("\t\t\t\t                          - PhilHealth (2.5%%):       Php%.2f\n", e.lastPhilHealth);
+    printf("\t\t\t\t                          - Pag-IBIG (2%%):           Php%.2f\n", e.lastPagIBIG);
+    printf("\t\t\t\t                          - Income Tax:              Php%.2f\n", e.lastIncomeTax);
+    printf("\t\t\t\t                          -----------------------------------------\n");
+    printf("\t\t\t\t                          TOTAL DEDUCTIONS:          Php%.2f\n", totalDeduction);
+    printf("\t\t\t\t                          NET SALARY:                Php%.2f\n", e.lastNetPay);
+    printf("\t\t\t\t                          =========================================\n");
 
-    printf("\nDo you want to print this salary slip to a text file? (Y/N): ");
+    printf("\n\t\t\t\t               Do you want to print this salary slip to a text file? (Y/N): ");
     char choice = 'N';
     if (scanf(" %c", &choice) != 1) choice = 'N';
     clearInputBuffer();
@@ -773,64 +1158,81 @@ void displayEmployeeSalarySlip(int id) {
     }
 }
 
-/* --- RECORD MANAGEMENT FUNCTIONS --- */
+
+
+
+
+
+
+
+// Employee Management
 
 void viewEmployees(void) {
     system(CLEAR_COMMAND);
     if (employeeCount == 0) {
-        printf("\nNo employees found.\n");
+        printf("\n\t\t\t\t                                   There is no employees yet.\n");
         return;
     }
 
-    printf("\n=== Employee Records (%d) ===\n", employeeCount);
-    printf("+----------+--------------------------------+------------------------+----------------+\n");
-    printf("| %-8s | %-30s | %-22s | %-14s |\n", "ID", "Name", "Position", "Monthly Base");
-    printf("+----------+--------------------------------+------------------------+----------------+\n");
+    printf("\n\n\t\t\t                 %d EMPLOYEE RECORDS\n", employeeCount);
+    printf("\t\t\t               ========================================================================================\n");
+    printf("\t\t\t               | %-8s   %-30s   %-22s  %-14s   |\n", "ID", "Name", "Position", "Monthly Base");
+    printf("\t\t\t               ========================================================================================\n");
 
     for (int i = 0; i < employeeCount; i++) {
-        printf("| %-8d | %-30s | %-22s | Php%-11.2f |\n",
-               employees[i].empID,
-               employees[i].name,
-               PositionNames[employees[i].position],
-               employees[i].monthlySalary);
+        printf("\n\t\t\t                 %-8d   %-30s   %-22s   Php%-11.2f  \n",
+                employees[i].empID,
+                employees[i].name,
+                PositionNames[employees[i].position],
+                employees[i].monthlySalary);
     }
-    printf("+----------+--------------------------------+------------------------+----------------+\n");
+    printf("\n\n\t\t\t               ----------------------------------------------------------------------------------------\n");
 }
+
+
+
+
+
+
+
 
 void addEmployee(void) {
     system(CLEAR_COMMAND);
     if (employeeCount >= MAX_EMPLOYEES) {
-        printf("\nEmployee list is full (max %d). Cannot add more employees.\n", MAX_EMPLOYEES);
+        printf("\n\t\t\t\t\tEmployee list is full (max %d). Cannot add more employees.\n", MAX_EMPLOYEES);
         return;
     }
 
     Employee e;
-    printf("\n=== Add New Employee ===\n");
+    printf("\n\t\t\t\t                                        ADD NEW EMPLOYEE\n");
     
     // Generate random 7-digit ID
     e.empID = generateEmployeeID();
-    printf("Generated Employee ID: %d\n", e.empID);
+    printf("\t\t\t                                         Generated Employee ID: %d\n", e.empID);
     
     // Get name with duplicate validation
     char name[50];
     while (1) {
-        getStringInput("\nEnter Full Name (max 48 chars): ", name, sizeof(name), 1);
+        getStringInput("\n\t\t\t\t                             Enter Full Name: ", name, sizeof(name), 1);
         
         if (findEmployeeIndexByName(name) != -1) {
-            printf("Error: Employee with name '%s' already exists!\n", name);
-            printf("Please enter a different name.\n");
+            printf("\t\t\t\t                    Employee with name '%s' already exists!\n", name);
+            printf("\t\t\t\t                                   Please enter a different name.\n");
             continue;
         }
         break;
     }
     strcpy(e.name, name);
 
-    printf("\nSELECT POSITION\n");
+    printf("\n\t\t\t\t                                         SELECT POSITION\n");
     for (int i = 0; i < NUM_POSITIONS; i++) {
-        printf("%d. %s (Php%.2f per month)\n",
-               i + 1, PositionNames[i], PositionMonthlySalaries[i]);
+        printf("\t\t\t\t                           %d. %s       Php%.2f per month\n",   i + 1, PositionNames[i],       PositionMonthlySalaries[i]);
     }
-    int posChoice = getIntInput("Choice: ", 1, NUM_POSITIONS);
+    int posChoice = getIntInput("\n\n\t\t\t\t                                          Choice: ", 1, NUM_POSITIONS);
+
+
+
+
 
     e.position = (PositionType)(posChoice - 1);
     e.monthlySalary = PositionMonthlySalaries[e.position];
@@ -850,13 +1252,13 @@ void addEmployee(void) {
     e.lastPagIBIG = 0.0f;
     e.lastIncomeTax = 0.0f;
 
-    printf("\n=== EMPLOYEE SUMMARY ===\n");
-    printf("ID: %d\n", e.empID);
-    printf("Name: %s\n", e.name);
-    printf("Position: %s\n", PositionNames[e.position]);
-    printf("Monthly Salary: Php%.2f\n", e.monthlySalary);
+    printf("\n\t\t\t\t                                         EMPLOYEE DETAIL\n");
+    printf("\n\t\t\t\t                                  ID:                %d\n", e.empID);
+    printf("\t\t\t\t                                  Name:              %s\n", e.name);
+    printf("\t\t\t\t                                  Position:          %s\n", PositionNames[e.position]);
+    printf("\t\t\t\t                                  Monthly Salary:    Php%.2f\n", e.monthlySalary);
     
-    printf("\nConfirm Add? (Y to confirm, any other key to cancel): ");
+    printf("\n\t\t\t\t\tConfirm Add? (Y to confirm, any other key to cancel): ");
     char c = 'N';
     if (scanf(" %c", &c) != 1) c = 'N';
     clearInputBuffer();
@@ -864,55 +1266,64 @@ void addEmployee(void) {
     if (c == 'Y' || c == 'y') {
         employees[employeeCount++] = e;
         saveToFile();
-        printf("\nEmployee '%s' added successfully with ID: %d.\n", e.name, e.empID);
+        printf("\n\t\t\t\t                    Employee '%s' added successfully with ID: %d.\n", e.name, e.empID);
     } else {
-        printf("\nAdding cancelled. No changes made.\n");
+        printf("\n\t\t\t\t                                Adding cancelled. No changes made.\n");
     }
 }
+
+
+
+
+
+
+
 
 void updateEmployee(void) {
     system(CLEAR_COMMAND);
     if (employeeCount == 0) {
-        printf("\nNo employees to update.\n");
+        printf("\n\t\t\t\t                                There is no employees yet to update.\n");
         return;
     }
-    printf("\n=== Update Employee ===\n");
+    printf("\n\t\t\t\t                                        UPDATE EMPLOYEE\n");
     
     int id;
-    printf("Enter Employee ID to update: ");
+    printf("\n\t\t\t\t                             Enter Employee ID to update: ");
     if (scanf("%d", &id) != 1) {
-        printf("Invalid ID format.\n");
+        printf("\t\t\t\t                             Invalid ID format.\n");
         clearInputBuffer();
         return;
     }
     clearInputBuffer();
     
     if (id < 1000000 || id > 9999999) {
-        printf("Invalid Employee ID. Must be 7 digits.\n");
+        printf("\t\t\t\t                                Invalid Employee ID. Must be 7 digits.\n");
         return;
     }
     
     int idx = findEmployeeIndexByID(id);
 
     if (idx == -1) {
-        printf("\nEmployee with ID %d not found.\n", id);
+        printf("\n\t\t\t\t                                Employee with ID %d not found.\n", id);
         return;
     }
 
     Employee *e = &employees[idx];
     Employee old = *e;
 
-    printf("\nCurrent Employee Details:\n");
-    printf("Name: %s\n", e->name);
-    printf("Position: %s (Php%.2f/month)\n", PositionNames[e->position], e->monthlySalary);
-    printf("Days Worked (Last Summary): %d\n", e->daysWorked);
+    printf("\n\t\t\t\t                                  Current Employee Details\n");
+    printf("\t\t\t\t                                  Name:        %s\n", e->name);
+    printf("\t\t\t\t                                  Position:    %s (Php%.2f/month)\n", PositionNames[e->position], e->monthlySalary);
+    printf("\t\t\t\t                                  Days Worked: %d\n", e->daysWorked);
 
-    printf("\nWhich field do you want to update?\n");
-    printf("1) Name\n2) Position (and Monthly Salary)\n3) Back\n");
-    int choice = getIntInput("Choice: ", 1, 3);
+    printf("\n\t\t\t\t                                Which field do you want to update?\n");
+    printf("\t\t\t\t                                1) Name\n");
+    printf("\t\t\t\t                                2) Position and Monthly Salary\n");
+    printf("\t\t\t\t                                3) Back\n");
+    int choice = getIntInput("\t\t\t\t                                          Choice: ", 1, 3);
 
     if (choice == 3) {
-        printf("\nUpdate cancelled.\n");
+        printf("\n\t\t\t\t                              Update cancelled.\n");
         return;
     }
 
@@ -920,244 +1331,262 @@ void updateEmployee(void) {
         case 1: {
             char newName[50];
             while (1) {
-                getStringInput("\nEnter new full name: ", newName, sizeof(newName), 1);
+                getStringInput("\n\t\t\t\t                             Enter new full name: ", newName, sizeof(newName), 1);
                 
                 if (isNameDuplicate(newName, e->empID)) {
-                    printf("Error: Employee with name '%s' already exists!\n", newName);
-                    printf("Please enter a different name.\n");
+                    printf("\t\t\t\t                    The Employee with name '%s' already exists!\n", newName);
+                    printf("\t\t\t\t                    Sorry you can't add the same person.\n");
                     continue;
                 }
                 break;
             }
             strcpy(e->name, newName);
-            printf("Name updated to: %s\n", e->name);
+            printf("\t\t\t\t                                 Name updated to: %s\n", e->name);
             break;
         }
         case 2: {
-            printf("\nSELECT NEW POSITION\n");
+            printf("\n\t\t\t\t                                  SELECT NEW POSITION\n");
             for (int i = 0; i < NUM_POSITIONS; i++) {
-                printf("%d. %s (Php%.2f per month)\n",
-                       i + 1, PositionNames[i], PositionMonthlySalaries[i]);
+                printf("\t\t\t\t                                  %d. %s (Php%.2f per month)\n",
+                        i + 1, PositionNames[i], PositionMonthlySalaries[i]);
             }
-            int posChoice = getIntInput("Choice: ", 1, NUM_POSITIONS);
+            int posChoice = getIntInput("\t\t\t\t                                          Choice: ", 1, NUM_POSITIONS);
             e->position = (PositionType)(posChoice - 1);
             e->monthlySalary = PositionMonthlySalaries[e->position];
-            printf("\nPosition updated to %s (Php%.2f/month).\n", PositionNames[e->position], e->monthlySalary);
+            printf("\n\t\t\t\t                    Position updated to %s (Php%.2f/month).\n", PositionNames[e->position], e->monthlySalary);
             break;
         }
     }
 
-    printf("\nConfirm update? (Y to confirm, any other key to cancel): ");
+    printf("\t\t\t\t                    Confirm update? (Y to confirm, any other key to cancel): ");
     char c = 'N';
     if (scanf(" %c", &c) != 1) c = 'N';
     clearInputBuffer();
 
     if (c == 'Y' || c == 'y') {
         saveToFile();
-        printf("\nEmployee updated and saved successfully.\n");
+        printf("\n\t\t\t\t                             Employee updated and saved successfully.\n");
     } else {
         *e = old;
-        printf("\nUpdate cancelled; original record restored.\n");
+        printf("\n\t\t\t\t                            Update cancelled; original record restored.\n");
     }
 }
+
+
+
+
+
+
+
 
 void removeEmployee(void) {
     system(CLEAR_COMMAND);
     if (employeeCount == 0) {
-        printf("\nNo employees to delete.\n");
+        printf("\n\t\t\t\t                                There is no employees yet to remove.\n");
+        pressEnterToContinue();
         return;
     }
-    printf("\n=== Delete Employee ===\n");
+    
+    printf("\n\t\t\t\t                                        DELETE EMPLOYEE\n");
     
     int id;
-    printf("Enter Employee ID to delete: ");
-    if (scanf("%d", &id) != 1) {
-        printf("Invalid ID format.\n");
+    while (1) {
+        printf("\n\t\t\t\t                        Enter Employee ID to delete (or 0 to cancel): ");
+        if (scanf("%d", &id) != 1) {
+            printf("\t\t\t\t                                Invalid ID format. Please enter numbers only.\n");
+            clearInputBuffer();
+            continue;
+        }
         clearInputBuffer();
-        return;
-    }
-    clearInputBuffer();
-    
-    if (id < 1000000 || id > 9999999) {
-        printf("Invalid Employee ID. Must be 7 digits.\n");
-        return;
+        
+        if (id == 0) {
+            printf("\n\t\t\t\t                                Delete operation cancelled.\n");
+            return;
+        }
+        
+        if (id < 1000000 || id > 9999999) {
+            printf("\t\t\t\t                                Invalid Employee ID. Must be 7 digits.\n");
+            continue;
+        }
+        
+        int idx = findEmployeeIndexByID(id);
+        if (idx == -1) {
+            printf("\t\t\t\t                   Employee with ID %d not found. Please enter a valid ID.\n", id);
+            continue;
+        }
+        break;
     }
     
     int idx = findEmployeeIndexByID(id);
-
-    if (idx == -1) {
-        printf("\nEmployee with ID %d not found.\n", id);
+    printf("\n\t\t\t\t                                   EMPLOYEE TO BE REMOVE\n");
+    printf("\t\t\t\t                                  ID:              %d\n", employees[idx].empID);
+    printf("\t\t\t\t                                  Name:            %s\n", employees[idx].name);
+    printf("\t\t\t\t                                  Position:        %s\n", PositionNames[employees[idx].position]);
+    printf("\t\t\t\t                                  Monthly Salary:  Php%.2f\n", employees[idx].monthlySalary);
+    
+    printf("\n\t\t\t\t                       ARE YOU SURE YOU WANT TO DELETE THIS EMPLOYEE?\n");
+    printf("\t\t\t\t    This action cannot be undone! (Type 'DELETE' to confirm, any other key to cancel): ");
+    
+    char confirmation[10];
+    if (!fgets(confirmation, sizeof(confirmation), stdin)) {
+        printf("\n\t\t\t\t\tDeletion cancelled. No changes made.\n");
+        pressEnterToContinue();
         return;
     }
-
-    printf("\nEMPLOYEE TO DELETE:\n");
-    printf("ID: %d\n", employees[idx].empID);
-    printf("Name: %s\n", employees[idx].name);
-    printf("Position: %s\n", PositionNames[employees[idx].position]);
     
-    printf("\nARE YOU SURE YOU WANT TO DELETE THIS EMPLOYEE?\n");
-    printf("This action cannot be undone! (Y to confirm): ");
-    char c = 'N';
-    if (scanf(" %c", &c) != 1) c = 'N';
-    clearInputBuffer();
-
-    if (c == 'Y' || c == 'y') {
+    confirmation[strcspn(confirmation, "\n")] = 0;
+    
+    if (strcmp(confirmation, "DELETE") == 0) {
         char deletedName[50];
         strcpy(deletedName, employees[idx].name);
+        int deletedID = employees[idx].empID;
         
+        // Remove employee from array
         employees[idx] = employees[employeeCount - 1];
         --employeeCount;
-        saveToFile();
-        printf("\nEmployee '%s' deleted successfully.\n", deletedName);
-    } else {
-        printf("\nDeletion cancelled. No changes made.\n");
-    }
-}
-
-void generateMonthlyAttendanceReport(void) {
-    system(CLEAR_COMMAND);
-    printf("\n=== MONTHLY ATTENDANCE REPORT ===\n");
-    
-    char monthYear[8];
-    printf("Enter month and year (MM-YYYY): ");
-    scanf("%7s", monthYear);
-    clearInputBuffer();
-    
-    printf("\nReport for: %s\n", monthYear);
-    printf("+---------+-----------------+--------------+----------+----------+-----------------+-----------------+\n");
-    printf("| %-7s | %-15s | %-12s | %-8s | %-8s | %-15s | %-15s |\n", 
-           "ID", "Name", "Days Worked", "Absent", "Late", "Overtime Hours", "Total Hours");
-    printf("+---------+-----------------+--------------+----------+----------+-----------------+-----------------+\n");
-    
-    for (int i = 0; i < employeeCount; i++) {
-        int daysWorked = 0;
-        int lateCount = 0;
-        float totalOvertime = 0.0;
-        float totalHours = 0.0;
         
-        for (int j = 0; j < attendanceCount; j++) {
-            if (attendanceRecords[j].empID == employees[i].empID) {
-                // Extract month-year from date (MM-YYYY format)
-                char recordMonthYear[8] = {0};
-                strncpy(recordMonthYear, attendanceRecords[j].date + 5, 2);
-                recordMonthYear[2] = '-';
-                strncpy(recordMonthYear + 3, attendanceRecords[j].date, 4);
-                
-                if (strcmp(recordMonthYear, monthYear) == 0) {
-                    daysWorked++;
-                    totalHours += attendanceRecords[j].hoursWorked;
-                    totalOvertime += attendanceRecords[j].overtimeHours;
-                    
-                    if (attendanceRecords[j].isLate) {
-                        lateCount++;
-                    }
-                }
+        // Remove attendance records for this employee
+        int newAttendanceCount = 0;
+        for (int i = 0; i < attendanceCount; i++) {
+            if (attendanceRecords[i].empID != deletedID) {
+                attendanceRecords[newAttendanceCount] = attendanceRecords[i];
+                newAttendanceCount++;
             }
         }
+        attendanceCount = newAttendanceCount;
         
-        printf("| %-7d | %-15.15s | %-12d | %-8d | %-8d | %-15.2f | %-15.2f |\n",
-               employees[i].empID,
-               employees[i].name,
-               daysWorked,
-               STANDARD_WORKING_DAYS - daysWorked,
-               lateCount,
-               totalOvertime,
-               totalHours);
+        saveToFile();
+        saveAttendanceToFile();
+        
+        printf("\n\t\t\t\t\tEmployee '%s' (ID: %d) Removed successfully.\n", deletedName, deletedID);
+    } else {
+        printf("\n\t\t\t\t\tRemove cancelled. No changes made.\n");
     }
-    printf("+---------+-----------------+--------------+----------+----------+-----------------+-----------------+\n");
+    
+    pressEnterToContinue();
 }
 
-/* --- ADMIN AND MAIN MENU FUNCTIONS --- */
+
+
+
+
+
+
+
+/* --- ADMIN AND MAIN MENU --- */
 
 int verifyPin(void) {
     int pin;
     int attempts = 3;
     
     while (attempts > 0) {
-        printf("\nEnter Admin PIN (%d attempts remaining): ", attempts);
+        system(CLEAR_COMMAND);
+        printf("\n\t\t\t\t                                    %d Attempts remaining ", attempts);
+        printf("\n\n\t\t\t\t                                   Enter Admin PIN (0000): ");
         if (scanf("%d", &pin) != 1) {
             clearInputBuffer();
-            printf("Invalid input. Please enter numbers only.\n");
+            printf("\t\t\t\t                             Invalid input. Please enter numbers only.\n");
             attempts--;
             continue;
         }
         clearInputBuffer();
         if (pin == ADMIN_PIN) {
-            printf("\nLogin successful.\n");
+            printf("\n\t\t\t\t                                          Login successful.\n");
             return 1;
         } else {
-            printf("Login failed.\n");
+            printf("\t\t\t\t                                          Login failed.\n");
             attempts--;
         }
     }
     
-    printf("\nToo many failed attempts. Access denied.\n");
+    printf("\n\t\t\t\t                             Too many failed attempts. Access denied.\n");
     return 0;
 }
+
+
+
+
+
+
+
 
 void adminMenu(void) {
     system(CLEAR_COMMAND);
     int choice;
     do {
-        printf("\nADMIN CONTROL PANEL\n");
-        printf("\n--- RECORD MANAGEMENT ---\n");
-        printf("1. View All Employee Records\n");
-        printf("2. Add New Employee\n");
-        printf("3. Update Employee Detail\n");
-        printf("4. Remove Employee\n");
-        printf("\n--- ATTENDANCE MANAGEMENT ---\n");
-        printf("5. Record Time-In\n");
-        printf("6. Calculate Attendance Summary\n");
-        printf("7. Generate Monthly Attendance Report\n");
-        printf("\n--- SALARY COMPUTATION ---\n");
-        printf("8. Calculate & View Monthly Salary Computation\n");
-        printf("9. View Individual Salary Slip\n");
-        printf("\n10. BACK TO MAIN MENU\n");
-        printf("\nChoice: ");
+        printf("\n\n\t\t\t\t                                        ADMIN CONTROL PANEL                \n");
+        printf("\n\n\t\t\t\t                                        - RECORD  SYSTEM -                      \n");
+        printf("\t\t\t\t                                    1. VIEW ALL EMPLOYEE RECORD               \n");
+        printf("\t\t\t\t                                    2. ADD    NEW      EMPLOYEE                    \n");
+        printf("\t\t\t\t                                    3. UPDATE  EMPLOYEE  DETAIL                  \n");
+        printf("\t\t\t\t                                    4. REMOVE          EMPLOYEE                       \n");
+        printf("\n\n\t\t\t\t                                        - ATTENDANCE RECORD -                   \n");
+        printf("\t\t\t\t                                    5. ATTENDANCE     DASHBOARD                     \n");
+        printf("\t\t\t\t                                    6. CALCULATE  BY ATTENDANCE                       \n");
+        printf("\n\n\t\t\t\t                                       - SALARY COMPUTATION -                            \n");
+        printf("\t\t\t\t                                    7. VIEW MONTHLY SALARY COMPUTATION            \n");
+        printf("\t\t\t\t                                    8. GENERATE  SLIP   BY   ID                       \n");
+        printf("\n\t\t\t\t                                    9. BACK     TO    MAIN MENU                              \n");
+        printf("\n\n\t\t\t\t                                          Choice: ");
 
         if (scanf("%d", &choice) != 1) {
-            printf("\nInvalid input. Please enter a number.\n");
+            printf("\n\t\t\t\t                             2.   Invalid input. Please enter a number.\n");
             clearInputBuffer();
             continue;
         }
         clearInputBuffer();
 
         switch (choice) {
-            case 1: viewEmployees(); break;
-            case 2: addEmployee(); break;
-            case 3: updateEmployee(); break;
-            case 4: removeEmployee(); break;
-            case 5: recordTimeIn(); break;
+            case 1: viewEmployees();              break;
+            case 2: addEmployee();                break;
+            case 3: updateEmployee();             break;
+            case 4: removeEmployee();             break;
+            case 5: attendanceMenu();             break;
             case 6: calculateAttendanceSummary(); break;
-            case 7: generateMonthlyAttendanceReport(); break;
-            case 8: calculateAndDisplaySalary(); break;
-            case 9: {
-                int id = getIntInput("\nEnter Employee ID for Salary Slip: ", 1000000, 9999999);
+            case 7: calculateAndDisplaySalary();  break;
+            case 8: {
+                int id = getIntInput("\n\t\t\t\t                                Enter Employee ID for Salary Slip: ", 1000000, 9999999);
                 displayEmployeeSalarySlip(id);
                 break;
             }
-            case 10: printf("\nLogging out of Admin.\n"); break;
-            default: printf("\nInvalid choice. Please select 1-10.\n");
+            case 9: printf("\n\t\t\t\t                             2.   Logging out of Admin.\n"); break;
+            default: printf("\n\t\t\t\t                             2.   Invalid choice. Please select 1-9.\n");
         }
-        if (choice != 10) pressEnterToContinue();
-    } while (choice != 10);
+        if (choice != 9) pressEnterToContinue();
+    } while (choice != 9);
 }
+
+
+
+
+
+
+
 
 void mainMenu(void) {
     int choice;
     do {
         system(CLEAR_COMMAND);
-        printf("\nEMPLOYEE RECORD MANAGEMENT SYSTEM\n");
-        printf("\n1. ADMIN LOGIN\n");
-        printf("\n2. VIEW ALL EMPLOYEE RECORDS\n");
-        printf("\n3. EXIT SYSTEM\n");
-        printf("\nChoice: ");
+        printf("\n\n\n\t\t\t    ** ** **  ** **      ** **  ** ** **   **           ** ** **      **        **    ** ** **    ** ** **              \n");
+        printf("\t\t\t    **        **  **    **  **  **     **  **         **        **     **      **     **          **             \n");
+        printf("\t\t\t    **        **   **  **   **  **     **  **        **          **     **    **      **          **                 \n");
+        printf("\t\t\t    ** ** **  **     **     **  ** ** **   **        **          **      **  **       ** ** **    ** ** **         \n");
+        printf("\t\t\t    **        **            **  **         **        **          **        **         **          **         \n");
+        printf("\t\t\t    **        **            **  **         **        **          **        **         **          **            \n");
+        printf("\t\t\t    **        **            **  **         **         **        **         **         **          **                       \n");
+        printf("\t\t\t    ** ** **  **            **  **         ** ** **     ** ** **           **         ** ** **    ** ** **  \n");
+        printf("\n\t\t\t\t                                       RECORD SYSTEM           \n\n");
+        printf("\n\n\t\t\t\t                             1.         ADMIN LOGIN           ");
+        printf("\n\n\t\t\t\t                             2.   VIEW ALL EMPLOYEE RECORDS     ");
+        printf("\n\n\t\t\t\t                             3.         EXIT SYSTEM             ");
+        printf("\n\n\n\t\t\t\t                                          Choice: ");
 
         if (scanf("%d", &choice) != 1) {
-            printf("\nInvalid input. Please enter a number.\n");
+            printf("\n\t\t\t\t                             Invalid input. Please enter a number.\n");
             clearInputBuffer();
             continue;
         }
+
         clearInputBuffer();
 
         switch (choice) {
@@ -1170,17 +1599,24 @@ void mainMenu(void) {
                 pressEnterToContinue();
                 break;
             case 3:
-                printf("\nExiting system. All changes saved.\n");
+                printf("\n\t\t\t\t                            Exiting system. All changes saved.\n");
                 break;
             default:
-                printf("\nInvalid choice. Please select 1-3.\n");
+                printf("\n\t\t\t\t                            Invalid choice. Please select 1-3.\n");
                 pressEnterToContinue();
         }
     } while (choice != 3);
 }
 
+
+
+
+
+
+
+
 int main(void) {
-    printf("Loading employee data...\n");
+    printf("\t\t\t\t                             Loading employee data...\n");
     loadFromFile();
     loadAttendanceFromFile();
     mainMenu();
