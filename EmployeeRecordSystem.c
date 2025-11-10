@@ -1,7 +1,7 @@
 // Employee Record System
 // Samuel Angelo Udtohan
 // Nataniel Abucejo
-// Gabriel Tayona
+// Jose Gabriel Tayona
 
 
 
@@ -24,7 +24,7 @@
 
 
 
-/* --- PLATFORM-DEPENDENT SLEEP FUNCTION --- */
+// PLATFORM-DEPENDENT SLEEP FUNCTION 
 #ifdef _WIN32
     #include <windows.h>
     #define SLEEP_FUNCTION(ms) Sleep(ms)
@@ -42,7 +42,7 @@
 
 
 
-/* --- SYSTEM CONSTANTS & DEFINITIONS --- */
+// SYSTEM CONSTANTS & DEFINITIONS
 #define MAX_EMPLOYEES 50
 #define ADMIN_PIN 1234
 #define FILENAME "mcdoPayrollRecords_MonthlyAttendance.txt"
@@ -59,7 +59,7 @@
 
 
 
-/* --- DEDUCTION CONSTANTS --- */
+// DEDUCTION CONSTANTS 
 #define DEDUCTION_SSS_RATE 0.045f
 #define DEDUCTION_PHILHEALTH_RATE 0.025f
 #define DEDUCTION_PAGIBIG_RATE 0.02f
@@ -72,7 +72,7 @@
 
 
 
-/* --- INCOME TAX TIERS (Updated 2024 Philippine Tax Table) --- */
+// INCOME TAX TIERS (Updated 2024 Philippine Tax Table) 
 #define TAX_TIER_1_LIMIT 20833.00f
 #define TAX_TIER_2_LIMIT 33333.00f
 #define TAX_TIER_3_LIMIT 66667.00f
@@ -98,7 +98,7 @@
 
 
 
-/* --- POSITION DEFINITIONS --- */
+// POSITION DEFINITIONS 
 typedef enum { 
     SERVICE_CREW, 
     COOKER, 
@@ -139,7 +139,7 @@ const float PositionMonthlySalaries[NUM_POSITIONS] = {
 
 
 
-/* --- ATTENDANCE STRUCTURES --- */
+// ATTENDANCE STRUCTURES
 typedef struct {
     int empID;
     char date[11];
@@ -157,7 +157,7 @@ typedef struct {
 
 
 
-/* --- EMPLOYEE STRUCTURE --- */
+// EMPLOYEE STRUCTURE
 typedef struct {
     int empID;
     char name[50];
@@ -184,7 +184,7 @@ typedef struct {
 
 
 
-/* --- GLOBAL STORAGE --- */
+// GLOBAL STORAGE
 Employee employees[MAX_EMPLOYEES];
 int employeeCount = 0;
 
@@ -206,7 +206,6 @@ int getIntInput(const char *prompt, int min, int max);
 void getStringInput(const char *prompt, char *out, int maxlen, int letters_spaces_only);
 void getCurrentDateTime(char *date, char *timeBuf);
 
-
 // Employee Management
 int generateEmployeeID(void);
 int findEmployeeIndexByID(int id);
@@ -215,7 +214,6 @@ int isNameDuplicate(const char *name, int excludeID);
 PositionType getPositionTypeByName(const char *name);
 int strcasecmp(const char *s1, const char *s2);
 
-
 // File Operations
 void saveToFile(void);
 void loadFromFile(void);
@@ -223,12 +221,10 @@ void saveAttendanceToFile(void);
 void loadAttendanceFromFile(void);
 void printPaySlipToFile(const Employee *e);
 
-
 // Menu Functions
 void mainMenu(void);
 void adminMenu(void);
 int verifyPin(void);
-
 
 // Employee Operations
 void viewEmployees(void);
@@ -236,18 +232,16 @@ void addEmployee(void);
 void updateEmployee(void);
 void removeEmployee(void);
 
-
 // Salary Functions
 void calculateAndDisplaySalary(void);
 float calculateIncomeTax(float taxableIncome);
 void displayEmployeeSalarySlip(int id);
 
-
 // Attendance Functions
 void attendanceMenu(void);
 void recordTimeIn(void);
 void recordAbsent(void);
-void calculateAttendanceSummary(void);
+void viewAttendance(void);
 
 
 
@@ -258,6 +252,7 @@ void calculateAttendanceSummary(void);
 
 // Implementation
 
+// Clears the input buffer to prevent leftover input from affecting subsequent scanf calls
 void clearInputBuffer(void) {
     int c;
     while ((c = getchar()) != '\n' && c != EOF) {}
@@ -269,7 +264,7 @@ void clearInputBuffer(void) {
 
 
 
-
+// Prompts user to press Enter to continue and waits for input
 void pressEnterToContinue(void) {
     printf("\n\t\t\t\t                                   Press Enter to continue...");
     fflush(stdout);
@@ -283,6 +278,7 @@ void pressEnterToContinue(void) {
 
 
 
+// Generates a unique 7-digit employee ID (1000000-9999999)
 int generateEmployeeID(void) {
     int id;
     int attempts = 0;
@@ -317,6 +313,7 @@ int generateEmployeeID(void) {
 
 
 
+// Searches for an employee by their ID and returns the index, or -1 if not found
 int findEmployeeIndexByID(int id) {
     for (int i = 0; i < employeeCount; ++i) {
         if (employees[i].empID == id) return i;
@@ -331,6 +328,7 @@ int findEmployeeIndexByID(int id) {
 
 
 
+// Searches for an employee by their name (case-insensitive) and returns the index, or -1 if not found
 int findEmployeeIndexByName(const char *name) {
     for (int i = 0; i < employeeCount; ++i) {
         if (strcasecmp(employees[i].name, name) == 0) return i;
@@ -345,6 +343,7 @@ int findEmployeeIndexByName(const char *name) {
 
 
 
+// Case-insensitive string comparison function
 int strcasecmp(const char *s1, const char *s2) {
     while (*s1 && *s2) {
         int diff = tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
@@ -362,6 +361,7 @@ int strcasecmp(const char *s1, const char *s2) {
 
 
 
+// Checks if an employee name already exists in the system (excluding specified ID)
 int isNameDuplicate(const char *name, int excludeID) {
     for (int i = 0; i < employeeCount; ++i) {
         if (employees[i].empID != excludeID && strcasecmp(employees[i].name, name) == 0) {
@@ -378,6 +378,7 @@ int isNameDuplicate(const char *name, int excludeID) {
 
 
 
+// Converts a position name string to its corresponding PositionType enum value
 PositionType getPositionTypeByName(const char *name) {
     for (int i = 0; i < NUM_POSITIONS; i++) {
         if (strcmp(name, PositionNames[i]) == 0) {
@@ -394,6 +395,7 @@ PositionType getPositionTypeByName(const char *name) {
 
 
 
+// Gets integer input from user with validation and range checking
 int getIntInput(const char *prompt, int min, int max) {
     int value;
     while (1) {
@@ -419,6 +421,7 @@ int getIntInput(const char *prompt, int min, int max) {
 
 
 
+// Gets string input from user with validation, trimming, and optional character restrictions
 void getStringInput(const char *prompt, char *out, int maxlen, int letters_spaces_only) {
     while (1) {
         if (prompt) printf("%s", prompt);
@@ -487,6 +490,7 @@ void getStringInput(const char *prompt, char *out, int maxlen, int letters_space
 
 
 
+// Gets the current system date and time formatted as YYYY-MM-DD and HH:MM
 void getCurrentDateTime(char *date, char *timeBuf) {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
@@ -501,8 +505,9 @@ void getCurrentDateTime(char *date, char *timeBuf) {
 
 
 
-/* --- FILE HANDLING --- */
+// FILE HANDLING
 
+// Saves all employee records to the payroll file
 void saveToFile(void) {
     FILE *fp = fopen(FILENAME, "w");
     if (!fp) {
@@ -541,6 +546,7 @@ void saveToFile(void) {
 
 
 
+// Loads all employee records from the payroll file
 void loadFromFile(void) {
     FILE *fp = fopen(FILENAME, "r");
     if (!fp) {
@@ -596,6 +602,7 @@ void loadFromFile(void) {
 
 
 
+// Saves all attendance records to the attendance file
 void saveAttendanceToFile(void) {
     FILE *fp = fopen(ATTENDANCE_FILE, "w");
     if (!fp) {
@@ -625,6 +632,7 @@ void saveAttendanceToFile(void) {
 
 
 
+// Loads all attendance records from the attendance file
 void loadAttendanceFromFile(void) {
     FILE *fp = fopen(ATTENDANCE_FILE, "r");
     if (!fp) {
@@ -672,6 +680,7 @@ void loadAttendanceFromFile(void) {
 
 
 
+// Generates and saves a payslip to a text file for a specific employee
 void printPaySlipToFile(const Employee *e) {
     char filename[MAX_STR];
     sprintf(filename, "payslip_%d.txt", e->empID);
@@ -701,7 +710,7 @@ void printPaySlipToFile(const Employee *e) {
     fprintf(fp, "------------------------------------------------\n");
     fprintf(fp, "EARNINGS:\n");
     fprintf(fp, "  - Basic Salary (Days Worked):    Php%.2f\n", actualBasicPay);
-    /* Overtime removed from slip */
+    // Overtime removed from slip 
     if (e->lastAbsentDeduct > 0) {
         fprintf(fp, "  - Less: Absent Deduction:         Php%.2f\n", e->lastAbsentDeduct);
     }
@@ -728,8 +737,9 @@ void printPaySlipToFile(const Employee *e) {
 
 
 
-/* --- ATTENDANCE SYSTEM --- */
+// ATTENDANCE SYSTEM 
 
+// Displays the attendance management menu and handles user choices
 void attendanceMenu(void) {
     system(CLEAR_COMMAND);
     int choice;
@@ -757,6 +767,7 @@ void attendanceMenu(void) {
     } while (choice != 3);
 }
 
+// Records a time-in entry for an employee with current date and time
 void recordTimeIn(void) {
     system(CLEAR_COMMAND);
     printf("\n\t\t\t\t                                        EMPLOYEE TIME IN\n");
@@ -816,12 +827,12 @@ void recordTimeIn(void) {
         printf("\t\t\t\t                                  Date:          %s\n", currentDate);
         printf("\t\t\t\t                                  Time-In:       %s\n", currentTime);
         printf("\t\t\t\t                                  Status:        %s\n", newRecord.status);
-        printf("\t\t\t\t                                  Hours Worked:  8.0 (Standard)\n");
     } else {
         printf("\t\t\t\t                     Attendance records limit reached. Cannot record time-in.\n");
     }
 }
 
+// Records an absent entry for an employee
 void recordAbsent(void) {
     system(CLEAR_COMMAND);
     printf("\n\t\t\t\t                                        RECORD ABSENT\n");
@@ -893,7 +904,8 @@ void recordAbsent(void) {
 
 
 
-void calculateAttendanceSummary(void) {
+// Displays attendance summary for all employees with days worked and absent information
+void viewAttendance(void) {
     system(CLEAR_COMMAND);
     printf("\n\t\t\t               EMPLOYEE ATTENDANCE\n");
     
@@ -907,12 +919,15 @@ void calculateAttendanceSummary(void) {
 
     for (int i = 0; i < employeeCount; i++) {
         int daysWorked = 0;
+        int daysAbsent = 0;
         float totalOvertime = 0.0;
         
         for (int j = 0; j < attendanceCount; j++) {
             if (attendanceRecords[j].empID == employees[i].empID) {
                 if (strcmp(attendanceRecords[j].status, "Present") == 0) {
                     daysWorked++;
+                } else if (strcmp(attendanceRecords[j].status, "Absent") == 0) {
+                    daysAbsent++;
                 }
                 totalOvertime += attendanceRecords[j].overtimeHours;
             }
@@ -921,36 +936,23 @@ void calculateAttendanceSummary(void) {
         employees[i].daysWorked = daysWorked;
         employees[i].totalOvertimeHours = totalOvertime;
         
-        int daysAbsent = STANDARD_WORKING_DAYS - daysWorked;
-        if (daysAbsent < 0) daysAbsent = 0;
         if (daysAbsent > 0) hasAbsences = 1;
         daysAbsentArray[i] = daysAbsent;
     }
     
     printf("\n\n\t\t\t               ========================================================================================\n");
-    if (hasAbsences) {
-        printf("\t\t\t               | %-7s  %-35s  %-25s  %-10s  |\n", "ID", "Name", "Days Worked", "Absent");
-    } else {
-        printf("\t\t\t               | %-7s  %-35s  %-25s  |\n", "ID", "Name", "Days Worked");
-    }
+    printf("\t\t\t               | %-7s  %-35s  %-25s  %-10s  |\n", "ID", "Name", "Days Worked", "Absent");
     printf("\t\t\t               ========================================================================================\n\n");
     
     for (int i = 0; i < employeeCount; i++) {
         int daysWorked = employees[i].daysWorked;
         int daysAbsent = daysAbsentArray[i];
         
-        if (hasAbsences) {
-            printf("\t\t\t                 %-7d  %-35s  %-25d  %-10d  \n\n",
-                    employees[i].empID,
-                    employees[i].name,
-                    daysWorked,
-                    daysAbsent);
-        } else {
-            printf("\t\t\t                 %-7d  %-35s  %-25d  \n\n",
-                    employees[i].empID,
-                    employees[i].name,
-                    daysWorked);
-        }
+        printf("\t\t\t                 %-7d  %-35s  %-25d  %-10d  \n\n",
+                employees[i].empID,
+                employees[i].name,
+                daysWorked,
+                daysAbsent);
     }
     printf("\t\t\t               ----------------------------------------------------------------------------------------\n");
     
@@ -964,8 +966,9 @@ void calculateAttendanceSummary(void) {
 
 
 
-/* --- SALARY COMPUTATION --- */
+// SALARY COMPUTATION 
 
+// Calculates income tax based on Philippine 2024 tax brackets
 float calculateIncomeTax(float taxableIncome) {
     if (taxableIncome <= TAX_TIER_1_LIMIT) {
         return 0.00f;
@@ -989,6 +992,7 @@ float calculateIncomeTax(float taxableIncome) {
 
 
 
+// Calculates and displays monthly salary computation for all employees
 void calculateAndDisplaySalary(void) {
     system(CLEAR_COMMAND);
     if (employeeCount == 0) {
@@ -1078,6 +1082,7 @@ void calculateAndDisplaySalary(void) {
 
 
 
+// Displays a detailed salary slip for a specific employee
 void displayEmployeeSalarySlip(int id) {
     system(CLEAR_COMMAND);
     int idx = findEmployeeIndexByID(id);
@@ -1145,7 +1150,7 @@ void displayEmployeeSalarySlip(int id) {
 
     printf("\t\t\t\t                          EARNINGS:\n"); 
     printf("\t\t\t\t                          - Basic Salary (Days Worked):   Php%.2f\n", actualBasicPay);
-    /* Overtime removed from slip */
+    // Overtime removed from slip
     if (e.lastAbsentDeduct > 0.0f && e.daysWorked < STANDARD_WORKING_DAYS) {
         printf("\t\t\t\t                          - Less: Absent Deduction:        Php%.2f\n", e.lastAbsentDeduct); 
     }
@@ -1181,6 +1186,7 @@ void displayEmployeeSalarySlip(int id) {
 
 // Employee Management
 
+// Displays a list of all employees in the system
 void viewEmployees(void) {
     system(CLEAR_COMMAND);
     if (employeeCount == 0) {
@@ -1210,6 +1216,7 @@ void viewEmployees(void) {
 
 
 
+// Adds a new employee to the system
 void addEmployee(void) {
     system(CLEAR_COMMAND);
     if (employeeCount >= MAX_EMPLOYEES) {
@@ -1231,7 +1238,7 @@ void addEmployee(void) {
         
         if (findEmployeeIndexByName(name) != -1) {
             printf("\t\t\t\t                    Employee with name '%s' already exists!\n", name);
-            printf("\t\t\t\t                                   Please enter a different name.\n");
+            printf("\t\t\t\t                                   Please enter a different person.\n");
             continue;
         }
         break;
@@ -1293,6 +1300,7 @@ void addEmployee(void) {
 
 
 
+// Updates an existing employee's information
 void updateEmployee(void) {
     system(CLEAR_COMMAND);
     if (employeeCount == 0) {
@@ -1369,7 +1377,12 @@ void updateEmployee(void) {
                         i + 1, PositionNames[i], PositionMonthlySalaries[i]);
             }
             int posChoice = getIntInput("\t\t\t\t                                          Choice: ", 1, NUM_POSITIONS);
-            e->position = (PositionType)(posChoice - 1);
+            PositionType newPosition = (PositionType)(posChoice - 1);
+            if (e->position == newPosition) {
+                printf("\t\t\t\t                         New position is the same as current position. Update cancelled.\n");
+                return;
+            }
+            e->position = newPosition;
             e->monthlySalary = PositionMonthlySalaries[e->position];
             printf("\n\t\t\t\t                    Position updated to %s (Php%.2f/month).\n", PositionNames[e->position], e->monthlySalary);
             break;
@@ -1397,6 +1410,7 @@ void updateEmployee(void) {
 
 
 
+// Removes an employee from the system
 void removeEmployee(void) {
     system(CLEAR_COMMAND);
     if (employeeCount == 0) {
@@ -1491,8 +1505,9 @@ void removeEmployee(void) {
 
 
 
-/* --- ADMIN AND MAIN MENU --- */
+// ADMIN AND MAIN MENU
 
+// Verifies admin PIN for accessing admin functions
 int verifyPin(void) {
     int pin;
     int attempts = 3;
@@ -1528,6 +1543,7 @@ int verifyPin(void) {
 
 
 
+// Displays and handles the admin control panel menu
 void adminMenu(void) {
     system(CLEAR_COMMAND);
     int choice;
@@ -1540,7 +1556,7 @@ void adminMenu(void) {
         printf("\t\t\t\t                                    4. REMOVE          EMPLOYEE                       \n");
         printf("\n\n\t\t\t\t                                        - ATTENDANCE RECORD -                   \n");
         printf("\t\t\t\t                                    5. ATTENDANCE     DASHBOARD                     \n");
-        printf("\t\t\t\t                                    6. CALCULATE  BY ATTENDANCE                       \n");
+        printf("\t\t\t\t                                    6. VIEW          ATTENDANCE                       \n");
         printf("\n\n\t\t\t\t                                       - SALARY COMPUTATION -                            \n");
         printf("\t\t\t\t                                    7. VIEW MONTHLY SALARY COMPUTATION            \n");
         printf("\t\t\t\t                                    8. GENERATE  SLIP   BY   ID                       \n");
@@ -1560,7 +1576,7 @@ void adminMenu(void) {
             case 3: updateEmployee();             break;
             case 4: removeEmployee();             break;
             case 5: attendanceMenu();             break;
-            case 6: calculateAttendanceSummary(); break;
+            case 6: viewAttendance(); break;
             case 7: calculateAndDisplaySalary();  break;
             case 8: {
                 int id = getIntInput("\n\t\t\t\t                                Enter Employee ID for Salary Slip: ", 1000000, 9999999);
@@ -1581,6 +1597,7 @@ void adminMenu(void) {
 
 
 
+// Displays and handles the main menu of the system
 void mainMenu(void) {
     int choice;
     do {
@@ -1633,6 +1650,7 @@ void mainMenu(void) {
 
 
 
+// Main entry point of the program
 int main(void) {
     printf("\t\t\t\t                             Loading employee data...\n");
     loadFromFile();
