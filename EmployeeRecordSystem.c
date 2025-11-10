@@ -695,14 +695,13 @@ void printPaySlipToFile(const Employee *e) {
     fprintf(fp, "Standard Working Days:     %d\n", STANDARD_WORKING_DAYS);
     fprintf(fp, "Daily Rate:                Php%.2f\n", e->lastDailyRate);
     fprintf(fp, "Days Worked:               %d\n", e->daysWorked);
-    fprintf(fp, "Days Absent:               %d\n", STANDARD_WORKING_DAYS - e->daysWorked);
+    if ((STANDARD_WORKING_DAYS - e->daysWorked) > 0) {
+        fprintf(fp, "Days Absent:               %d\n", STANDARD_WORKING_DAYS - e->daysWorked);
+    }
     fprintf(fp, "------------------------------------------------\n");
     fprintf(fp, "EARNINGS:\n");
     fprintf(fp, "  - Basic Salary (Days Worked):    Php%.2f\n", actualBasicPay);
-    if (e->lastOvertimePay > 0.0f) {
-        fprintf(fp, "  - Overtime Pay (%.2f hrs @ %.2fx): +Php%.2f\n", 
-                e->totalOvertimeHours, OVERTIME_RATE_MULTIPLIER, e->lastOvertimePay);
-    }
+    /* Overtime removed from slip */
     if (e->lastAbsentDeduct > 0) {
         fprintf(fp, "  - Less: Absent Deduction:         Php%.2f\n", e->lastAbsentDeduct);
     }
@@ -903,10 +902,9 @@ void calculateAttendanceSummary(void) {
         return;
     }
     
-    printf("\n\n\t\t\t               ========================================================================================\n");
-    printf("\t\t\t               | %-7s  %-35s  %-25s  %-10s  |\n", "ID", "Name", "Days Worked", "Absent");
-    printf("\t\t\t               ========================================================================================\n\n");
-    
+    int daysAbsentArray[MAX_EMPLOYEES] = {0};
+    int hasAbsences = 0;
+
     for (int i = 0; i < employeeCount; i++) {
         int daysWorked = 0;
         float totalOvertime = 0.0;
@@ -925,13 +923,34 @@ void calculateAttendanceSummary(void) {
         
         int daysAbsent = STANDARD_WORKING_DAYS - daysWorked;
         if (daysAbsent < 0) daysAbsent = 0;
+        if (daysAbsent > 0) hasAbsences = 1;
+        daysAbsentArray[i] = daysAbsent;
+    }
+    
+    printf("\n\n\t\t\t               ========================================================================================\n");
+    if (hasAbsences) {
+        printf("\t\t\t               | %-7s  %-35s  %-25s  %-10s  |\n", "ID", "Name", "Days Worked", "Absent");
+    } else {
+        printf("\t\t\t               | %-7s  %-35s  %-25s  |\n", "ID", "Name", "Days Worked");
+    }
+    printf("\t\t\t               ========================================================================================\n\n");
+    
+    for (int i = 0; i < employeeCount; i++) {
+        int daysWorked = employees[i].daysWorked;
+        int daysAbsent = daysAbsentArray[i];
         
-        printf("\t\t\t                 %-7d  %-35s  %-25d  %-10d  \n\n",
-                employees[i].empID,
-                employees[i].name,
-                daysWorked,
-                daysAbsent,
-                totalOvertime);
+        if (hasAbsences) {
+            printf("\t\t\t                 %-7d  %-35s  %-25d  %-10d  \n\n",
+                    employees[i].empID,
+                    employees[i].name,
+                    daysWorked,
+                    daysAbsent);
+        } else {
+            printf("\t\t\t                 %-7d  %-35s  %-25d  \n\n",
+                    employees[i].empID,
+                    employees[i].name,
+                    daysWorked);
+        }
     }
     printf("\t\t\t               ----------------------------------------------------------------------------------------\n");
     
@@ -998,12 +1017,10 @@ void calculateAndDisplaySalary(void) {
             absentDeduct = (STANDARD_WORKING_DAYS - employees[i].daysWorked) * dailyRate;
         }
 
-        // Calculate Overtime Pay
-        float overtimePay = employees[i].totalOvertimeHours * hourlyRate * OVERTIME_RATE_MULTIPLIER;
-        if (overtimePay < 0.0f) overtimePay = 0.0f;
-
-        // Calculate Gross Pay (basic + overtime, absent deduction already reflected in lower basicSalary)
-        float grossPay = basicSalary + overtimePay;
+        // Overtime removed
+        float overtimePay = 0.0f;
+        // Calculate Gross Pay without overtime (absent deduction already reflected in lower basicSalary)
+        float grossPay = basicSalary;
         if (grossPay < 0.0f) grossPay = 0.0f;
 
         // Calculate mandatory deductions (only if grossPay is positive)
@@ -1032,7 +1049,7 @@ void calculateAndDisplaySalary(void) {
         // Store calculation results
         employees[i].lastDailyRate = dailyRate;
         employees[i].lastAbsentDeduct = absentDeduct;
-        employees[i].lastOvertimePay = overtimePay;
+        employees[i].lastOvertimePay = 0.0f;
         employees[i].lastGrossPay = grossPay;
         employees[i].lastNetPay = netSalary;
         employees[i].lastSSS = sssDeduct;
@@ -1120,7 +1137,6 @@ void displayEmployeeSalarySlip(int id) {
     printf("\t\t\t\t                          Monthly Salary Base:   Php%.2f\n", e.monthlySalary);
     printf("\t\t\t\t                          Daily Rate:            Php%.2f\n", e.lastDailyRate);
     printf("\t\t\t\t                          Days Worked:           %d / %d\n", e.daysWorked, STANDARD_WORKING_DAYS);
-    printf("\t\t\t\t                          Overtime Hours:        %.2f\n", e.totalOvertimeHours);
     printf("\t\t\t\t                          -----------------------------------------\n");
 
     float totalDeduction = e.lastSSS + e.lastPhilHealth + e.lastPagIBIG + e.lastIncomeTax;
@@ -1129,9 +1145,7 @@ void displayEmployeeSalarySlip(int id) {
 
     printf("\t\t\t\t                          EARNINGS:\n"); 
     printf("\t\t\t\t                          - Basic Salary (Days Worked):   Php%.2f\n", actualBasicPay);
-    if (e.lastOvertimePay > 0.0f) {
-        printf("\t\t\t\t                          - ADD: Overtime Pay (%.2fx):    +Php%.2f\n", OVERTIME_RATE_MULTIPLIER, e.lastOvertimePay);
-    }
+    /* Overtime removed from slip */
     if (e.lastAbsentDeduct > 0.0f && e.daysWorked < STANDARD_WORKING_DAYS) {
         printf("\t\t\t\t                          - Less: Absent Deduction:        Php%.2f\n", e.lastAbsentDeduct); 
     }
@@ -1340,6 +1354,10 @@ void updateEmployee(void) {
                 }
                 break;
             }
+            if (strcmp(e->name, newName) == 0) {
+                printf("\t\t\t\t                         New name is the same as current name. Update cancelled.\n");
+                return;
+            }
             strcpy(e->name, newName);
             printf("\t\t\t\t                                 Name updated to: %s\n", e->name);
             break;
@@ -1387,11 +1405,11 @@ void removeEmployee(void) {
         return;
     }
     
-    printf("\n\t\t\t\t                                        DELETE EMPLOYEE\n");
+    printf("\n\t\t\t\t                                        REMOVE EMPLOYEE\n");
     
     int id;
     while (1) {
-        printf("\n\t\t\t\t                        Enter Employee ID to delete (or 0 to cancel): ");
+        printf("\n\t\t\t\t                        Enter Employee ID to remove (or 0 to cancel): ");
         if (scanf("%d", &id) != 1) {
             printf("\t\t\t\t                                Invalid ID format. Please enter numbers only.\n");
             clearInputBuffer();
@@ -1400,7 +1418,7 @@ void removeEmployee(void) {
         clearInputBuffer();
         
         if (id == 0) {
-            printf("\n\t\t\t\t                                Delete operation cancelled.\n");
+            printf("\n\t\t\t\t                                Remove operation cancelled.\n");
             return;
         }
         
@@ -1418,25 +1436,25 @@ void removeEmployee(void) {
     }
     
     int idx = findEmployeeIndexByID(id);
-    printf("\n\t\t\t\t                                   EMPLOYEE TO BE REMOVE\n");
+    printf("\n\t\t\t\t                                   EMPLOYEE TO BE REMOVED\n");
     printf("\t\t\t\t                                  ID:              %d\n", employees[idx].empID);
     printf("\t\t\t\t                                  Name:            %s\n", employees[idx].name);
     printf("\t\t\t\t                                  Position:        %s\n", PositionNames[employees[idx].position]);
     printf("\t\t\t\t                                  Monthly Salary:  Php%.2f\n", employees[idx].monthlySalary);
     
-    printf("\n\t\t\t\t                       ARE YOU SURE YOU WANT TO DELETE THIS EMPLOYEE?\n");
-    printf("\t\t\t\t    This action cannot be undone! (Type 'DELETE' to confirm, any other key to cancel): ");
+    printf("\n\t\t\t\t                       ARE YOU SURE YOU WANT TO REMOVE THIS EMPLOYEE?\n");
+    printf("\t\t\t\t    This action cannot be undone! (Type 'REMOVE' to confirm, any other key to cancel): ");
     
     char confirmation[10];
     if (!fgets(confirmation, sizeof(confirmation), stdin)) {
-        printf("\n\t\t\t\t\tDeletion cancelled. No changes made.\n");
+        printf("\n\t\t\t\t\tRemoval cancelled. No changes made.\n");
         pressEnterToContinue();
         return;
     }
     
     confirmation[strcspn(confirmation, "\n")] = 0;
     
-    if (strcmp(confirmation, "DELETE") == 0) {
+    if (strcmp(confirmation, "REMOVE") == 0) {
         char deletedName[50];
         strcpy(deletedName, employees[idx].name);
         int deletedID = employees[idx].empID;
@@ -1460,7 +1478,7 @@ void removeEmployee(void) {
         
         printf("\n\t\t\t\t\tEmployee '%s' (ID: %d) Removed successfully.\n", deletedName, deletedID);
     } else {
-        printf("\n\t\t\t\t\tRemove cancelled. No changes made.\n");
+        printf("\n\t\t\t\t\tRemoval cancelled. No changes made.\n");
     }
     
     pressEnterToContinue();
@@ -1622,3 +1640,5 @@ int main(void) {
     mainMenu();
     return 0;
 }
+
+
