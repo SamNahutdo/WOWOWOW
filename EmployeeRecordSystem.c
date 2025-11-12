@@ -45,7 +45,7 @@
 // SYSTEM CONSTANTS & DEFINITIONS
 #define MAX_EMPLOYEES 50
 #define ADMIN_PIN 1234
-#define FILENAME "mcdoPayrollRecords_MonthlyAttendance.txt"
+#define FILENAME "MonthlyAttendance.txt"
 #define ATTENDANCE_FILE "employee_attendance.txt"
 #define MAX_STR 100
 #define STANDARD_WORKING_DAYS 22
@@ -90,7 +90,6 @@
 #define TAX_BASE_TIER_4 10833.33f
 #define TAX_BASE_TIER_5 40833.33f
 #define TAX_BASE_TIER_6 200833.33f
-
 
 
 
@@ -231,6 +230,8 @@ void viewEmployees(void);
 void addEmployee(void);
 void updateEmployee(void);
 void removeEmployee(void);
+void sortEmployeesByID(void);
+void sortEmployeesByName(void);
 
 // Salary Functions
 void calculateAndDisplaySalary(void);
@@ -745,9 +746,10 @@ void attendanceMenu(void) {
     int choice;
     do {
         printf("\n\t\t\t\t                                        ATTENDANCE MANAGEMENT\n");
-        printf("\n\t\t\t\t                                        1. Time In Today\n");
-        printf("\t\t\t\t                                        2. Absent\n");
-        printf("\t\t\t\t                                        3. Back to Admin Menu\n");
+    printf("\n\t\t\t\t                                        1. Time In Today\n");
+    printf("\t\t\t\t                                        2. Absent\n");
+    printf("\t\t\t\t                                        3. BACK TO ADMIN MENU\n");
+    printf("\t\t\t\t                                        4. SORT EMPLOYEES BY ID (ascending)\n");
         printf("\n\t\t\t\t                                          Choice: ");
         
         if (scanf("%d", &choice) != 1) {
@@ -760,8 +762,9 @@ void attendanceMenu(void) {
         switch (choice) {
             case 1: recordTimeIn(); break;
             case 2: recordAbsent(); break;
-            case 3: printf("\n\t\t\t\t                                        Returning to Admin Menu.\n"); break;
-            default: printf("\n\t\t\t\t                                        Invalid choice. Please select 1-3.\n");
+                case 3: printf("\n\t\t\t\t                                        Returning to Admin Menu.\n"); break;
+                case 4: sortEmployeesByID(); break;
+            default: printf("\n\t\t\t\t                                        Invalid choice. Please select 1-4.\n");
         }
         if (choice != 3) pressEnterToContinue();
     } while (choice != 3);
@@ -1216,6 +1219,53 @@ void viewEmployees(void) {
 
 
 
+
+
+
+
+
+
+// Sort employees in-place by Employee ID using Insertion Sort (stable, efficient for small N)
+void sortEmployeesByID(void) {
+    if (employeeCount <= 1) return;
+    for (int i = 1; i < employeeCount; i++) {
+        Employee key = employees[i];
+        int j = i - 1;
+        while (j >= 0 && employees[j].empID > key.empID) {
+            employees[j + 1] = employees[j];
+            j--;
+        }
+        employees[j + 1] = key;
+    }
+    saveToFile();
+    printf("\nEmployees sorted by ID successfully and saved to file.\n");
+}
+
+// Sort employees in-place by Name using Insertion Sort (ascending A-Z)
+void sortEmployeesByName(void) {
+    if (employeeCount <= 1) return;
+    for (int i = 1; i < employeeCount; i++) {
+        Employee key = employees[i];
+        int j = i - 1;
+
+        // Use case-insensitive comparison for alphabetical ordering
+        while (j >= 0 && strcasecmp(employees[j].name, key.name) > 0) {
+            employees[j + 1] = employees[j];
+            j--;
+        }
+        employees[j + 1] = key;
+    }
+    saveToFile();
+    printf("\nEmployees sorted by Name successfully and saved to file.\n");
+}
+
+
+
+
+
+
+
+
 // Adds a new employee to the system
 void addEmployee(void) {
     system(CLEAR_COMMAND);
@@ -1554,13 +1604,14 @@ void adminMenu(void) {
         printf("\t\t\t\t                                    2. ADD    NEW      EMPLOYEE                    \n");
         printf("\t\t\t\t                                    3. UPDATE  EMPLOYEE  DETAIL                  \n");
         printf("\t\t\t\t                                    4. REMOVE          EMPLOYEE                       \n");
+        printf("\t\t\t\t                                    5. EMPLOYEE SORTING OPTIONS                         \n");
         printf("\n\n\t\t\t\t                                        - ATTENDANCE RECORD -                   \n");
-        printf("\t\t\t\t                                    5. ATTENDANCE     DASHBOARD                     \n");
-        printf("\t\t\t\t                                    6. VIEW          ATTENDANCE                       \n");
+        printf("\t\t\t\t                                    6. ATTENDANCE     DASHBOARD                     \n");
+        printf("\t\t\t\t                                    7. VIEW          ATTENDANCE                       \n");
         printf("\n\n\t\t\t\t                                       - SALARY COMPUTATION -                            \n");
-        printf("\t\t\t\t                                    7. VIEW MONTHLY SALARY COMPUTATION            \n");
-        printf("\t\t\t\t                                    8. GENERATE  SLIP   BY   ID                       \n");
-        printf("\n\t\t\t\t                                    9. BACK     TO    MAIN MENU                              \n");
+        printf("\t\t\t\t                                    8. VIEW MONTHLY SALARY COMPUTATION            \n");
+        printf("\t\t\t\t                                    9. GENERATE  SLIP   BY   ID                       \n");
+    printf("\n\t\t\t\t                                    10. BACK     TO    MAIN MENU                              \n");
         printf("\n\n\t\t\t\t                                          Choice: ");
 
         if (scanf("%d", &choice) != 1) {
@@ -1575,16 +1626,35 @@ void adminMenu(void) {
             case 2: addEmployee();                break;
             case 3: updateEmployee();             break;
             case 4: removeEmployee();             break;
-            case 5: attendanceMenu();             break;
-            case 6: viewAttendance(); break;
-            case 7: calculateAndDisplaySalary();  break;
-            case 8: {
+            case 5: {
+                int sortChoice = 0;
+                do {
+                    system(CLEAR_COMMAND);
+                    printf("\n\t\t\t\t                                        EMPLOYEE SORTING OPTIONS\n");
+                    printf("\t\t\t\t                                        1. Sort by ID\n");
+                    printf("\t\t\t\t                                        2. Sort by Name\n");
+                    printf("\t\t\t\t                                        3. Back\n");
+                    sortChoice = getIntInput("\n\t\t\t\t                                          Choice: ", 1, 3);
+                    if (sortChoice == 1) {
+                        sortEmployeesByID();
+                        pressEnterToContinue();
+                    } else if (sortChoice == 2) {
+                        sortEmployeesByName();
+                        pressEnterToContinue();
+                    }
+                } while (sortChoice != 3);
+                break;
+            }
+            case 6: attendanceMenu();             break;
+            case 7: viewAttendance(); break;
+            case 8: calculateAndDisplaySalary();  break;
+            case 9: {
                 int id = getIntInput("\n\t\t\t\t                                Enter Employee ID for Salary Slip: ", 1000000, 9999999);
                 displayEmployeeSalarySlip(id);
                 break;
             }
-            case 9: printf("\n\t\t\t\t                             2.   Logging out of Admin.\n"); break;
-            default: printf("\n\t\t\t\t                             2.   Invalid choice. Please select 1-9.\n");
+            case 10: printf("\n\t\t\t\t                             2.   Logging out of Admin.\n"); break;
+            default: printf("\n\t\t\t\t                             2.   Invalid choice. Please select 1-10.\n");
         }
         if (choice != 9) pressEnterToContinue();
     } while (choice != 9);
@@ -1602,14 +1672,14 @@ void mainMenu(void) {
     int choice;
     do {
         system(CLEAR_COMMAND);
-        printf("\n\n\n\t\t\t    ** ** **  ** **      ** **  ** ** **   **           ** ** **      **        **    ** ** **    ** ** **              \n");
-        printf("\t\t\t    **        **  **    **  **  **     **  **         **        **     **      **     **          **             \n");
+        printf("\n\n\n\t\t\t    ** ** **  ** **      ** **  ** ** **   **           ** ** **      **        **    ** ** **    ** ** **     \n");
+        printf("\t\t\t    **        **  **    **  **  **     **  **         **        **     **      **     **          **                 \n");
         printf("\t\t\t    **        **   **  **   **  **     **  **        **          **     **    **      **          **                 \n");
-        printf("\t\t\t    ** ** **  **     **     **  ** ** **   **        **          **      **  **       ** ** **    ** ** **         \n");
-        printf("\t\t\t    **        **            **  **         **        **          **        **         **          **         \n");
-        printf("\t\t\t    **        **            **  **         **        **          **        **         **          **            \n");
-        printf("\t\t\t    **        **            **  **         **         **        **         **         **          **                       \n");
-        printf("\t\t\t    ** ** **  **            **  **         ** ** **     ** ** **           **         ** ** **    ** ** **  \n");
+        printf("\t\t\t    ** ** **  **     **     **  ** ** **   **        **          **      **  **       ** ** **    ** ** **           \n");
+        printf("\t\t\t    **        **            **  **         **        **          **        **         **          **                 \n");
+        printf("\t\t\t    **        **            **  **         **        **          **        **         **          **                 \n");
+        printf("\t\t\t    **        **            **  **         **         **        **         **         **          **                 \n");
+        printf("\t\t\t    ** ** **  **            **  **         ** ** **     ** ** **           **         ** ** **    ** ** **           \n");
         printf("\n\t\t\t\t                                       RECORD SYSTEM           \n\n");
         printf("\n\n\t\t\t\t                             1.         ADMIN LOGIN           ");
         printf("\n\n\t\t\t\t                             2.   VIEW ALL EMPLOYEE RECORDS     ");
